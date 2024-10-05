@@ -1,0 +1,51 @@
+# render.yaml
+services:
+  # Frontend (Next.js static site)
+  - type: web
+    name: nextjs-frontend
+    env: static
+    staticPublishPath: out  # This is where the static build output will be stored (from 'next export')
+    buildCommand: npm install && npm run build && npm run export
+    routes:
+      - type: rewrite
+        source: /.*
+        destination: /index.html
+    # envVars:
+    #   - key: MONGODB_URI
+    #     value: mongodb+srv://sagar:ZmfCsvn2GHmiPKyt@advideocluster.811rpxw.mongodb.net/AdVideoCluster?retryWrites=true&w=majority
+    #   - key: JWT_SECRET
+    #     value: myAdVideo$$$project1setcretyeK795$$$
+    #   - key: NEXT_PUBLIC_API_BASE_URL
+    #     value: http://localhost:3000
+
+
+
+  # Backend (Node.js with Express API)
+  - type: web
+    name: nodejs-backend
+    env: node
+    plan: free # You can upgrade this based on your needs
+    buildCommand: npm install
+    startCommand: npm start  # This runs "node server.js" for production, not the dev server
+    # envVars:
+    #   - key: MONGODB_URI
+    #     value: mongodb+srv://sagar:ZmfCsvn2GHmiPKyt@advideocluster.811rpxw.mongodb.net/AdVideoCluster?retryWrites=true&w=majority
+    #   - key: JWT_SECRET
+    #     value: myAdVideo$$$project1setcretyeK795$$$
+     
+
+  # Backend (Python FastAPI - AI Model)
+  - type: web
+    name: fastapi-backend
+    env: python
+    plan: free # You can upgrade this based on your needs
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port 8000  # No --reload for production
+    # envVars:
+    #   - key: OPENAI_API_KEY
+    #     value: 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
+    #   - key: FLUX_API_KEY
+    #     value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpYW5hc3NhZ2FyQGdtYWlsLmNvbSJ9.51t6Z8ZHmoDC_tyxt3T12GEj8jaa9oaLpucZtQBcviU
+    #   - key: ELEVEN_LABS_API_KEY
+    #     value: sk_f60c1ff0001768d186ab54a98b9ba56c8066daf03efb0181
+     
