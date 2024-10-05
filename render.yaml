@@ -1,22 +1,36 @@
 # render.yaml
 services:
-  # Frontend (Next.js static site)
+# Frontend (Next.js Web Service)
   - type: web
     name: nextjs-frontend
-    env: static
-    staticPublishPath: out  # This is where the static build output will be stored (from 'next export')
-    buildCommand: npm install && npm run build && npm run export
-    routes:
-      - type: rewrite
-        source: /.*
-        destination: /index.html
+    env: node  # Use 'node' since it's a Web Service, not static
+    plan: free # Adjust based on your usage
+    buildCommand: npm install && npm run build
+    startCommand: npm start  # Runs the production Next.js server
     # envVars:
     #   - key: MONGODB_URI
     #     value: mongodb+srv://sagar:ZmfCsvn2GHmiPKyt@advideocluster.811rpxw.mongodb.net/AdVideoCluster?retryWrites=true&w=majority
     #   - key: JWT_SECRET
     #     value: myAdVideo$$$project1setcretyeK795$$$
     #   - key: NEXT_PUBLIC_API_BASE_URL
-    #     value: http://localhost:3000
+    #     value: http://localhost:3000  # Adjust this to your API base URL
+
+
+
+
+
+
+  # Frontend (Next.js static site)
+  # - type: web
+  #   name: nextjs-frontend
+  #   env: static
+  #   staticPublishPath: out  # This is where the static build output will be stored (from 'next export')
+  #   buildCommand: npm install && npm run build && npm run export
+  #   routes:
+  #     - type: rewrite
+  #       source: /.*
+  #       destination: /index.html
+  
 
 
 

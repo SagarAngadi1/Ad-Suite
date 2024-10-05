@@ -147,7 +147,7 @@ const ProductPhotography = ({ currentUser }) => {
       setGeneratedImageUrl(generatedImagePath);
 
    
-        alert('Product Photography Data stored successfully!');
+        //alert('Product Photography Data stored successfully!');
         console.log('Data saved successfully:', data);
         console.log('generatedImage:', generatedImagePath);
       } else {
