@@ -2,8 +2,10 @@
 import { useEffect, useState } from 'react';
 import { parseCookies } from 'nookies';
 import fetchCurrentUser from '../../utils/fetchCurrentUser';
- import Head from 'next/head';
- import Link from 'next/link';
+import Head from 'next/head';
+import Link from 'next/link';
+import Image from 'next/image';
+
 
 const CreateAd = ({ currentUser }) => {
   const [user, setUser] = useState(currentUser);
@@ -213,7 +215,7 @@ const CreateAd = ({ currentUser }) => {
             /> 
 
             <div className="flex items-center mt-4 mb-2 text-slate-500">  
-              <img
+            <img
                src="/protip_icon.png" // Replace with the actual path to the user's profile icon
                alt="Protip Icon"
                className="w-5 h-5 rounded-full mb-1"
@@ -235,7 +237,7 @@ const CreateAd = ({ currentUser }) => {
 
             {/* //Ad Details BLOCK  //present */}
           <div className="w-full bg-white rounded-lg p-3">
-            <label className="block text-sm font-bold text-slate-400 mb-2 mt-2 ms-1"> B. 'Ad' Specific Details (Optional)</label>
+            <label className="block text-sm font-bold text-slate-400 mb-2 mt-2 ms-1"> B. &apos;Ad&apos; Specific Details (Optional)</label>
              
            
             <textarea

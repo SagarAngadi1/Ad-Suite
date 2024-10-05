@@ -6,6 +6,8 @@ import Head from 'next/head';
 import Link from 'next/link';
 import axios from 'axios'; // Import axios
 import { useRouter } from 'next/router'; // Correct import
+import Image from 'next/image';
+
 
 
 
@@ -270,10 +272,11 @@ const ProductPhotography = ({ currentUser }) => {
         <div className="relative w-1/2 mx-auto rounded-lg flex flex-col items-center mt-0 mb-8 p-2">
           <h2 className="text-slate-500 font-semibold mb-2">Generated Product Photo:</h2>
           <div className="relative w-4/5 max-w-lg h-auto">
-            <img
+          <img
               src={generatedImageUrl}
               alt="Generated Product Photography"
               className="w-full h-auto rounded-lg"
+              width={500} height={300}
             />
 
             {/* Download Icon */}

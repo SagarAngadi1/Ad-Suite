@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { setCookie } from 'nookies';
+import Link from 'next/link';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -74,7 +75,7 @@ const Login = () => {
 
       <h1 className="text-md font-bold mt-8" style={{ lineHeight: '1' }}>
         New to Ad-Suite? Just 
-         <a className="text-purple-600 hover:text-purple-700" href="/signup"> SignUp!</a>
+        <Link className="text-purple-600 hover:text-purple-700" href="/signup"> SignUp!</Link>
         </h1>
     </div>
 

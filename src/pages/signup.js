@@ -1,6 +1,7 @@
 // C:\Users\User\VisualStudioProjects\AdVideo\advideo_nextjs\pages\signup.js
 import { useState } from 'react'; // Imports the useState hook from React. This hook allows you to add state to your functional components
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 
 export default function SignUp() {      //Exports the SignUp function as the default export of the module
@@ -70,7 +71,7 @@ export default function SignUp() {      //Exports the SignUp function as the def
 
       <h1 className="text-md font-bold mt-8" style={{ lineHeight: '1' }}>
         Already a user? Just
-         <a className="text-purple-600 hover:text-purple-700" href="/login"> Login!</a>
+        <Link className="text-purple-600 hover:text-purple-700" href="/login"> Login!</Link>
         </h1>
     </div>
   );

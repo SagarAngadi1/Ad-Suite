@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { useRef } from 'react'; // Import useRef for creating references
 import { useRouter } from 'next/router';
 //import { SparklesIcon } from '@heroicons/react/24/solid';
+import Image from 'next/image';
+
 
 
 
@@ -50,7 +52,7 @@ export default function Home() {
 
 
             <div className="flex-2 items-center -ms-14">
-              <a href="/" className="text-2xl font-bold text-purple-600">Ad-Suite</a>
+            <Link href="/" className="text-2xl font-bold text-purple-600">Ad-Suite</Link>
             </div>
 
 
@@ -86,12 +88,12 @@ export default function Home() {
       <main className="flex flex-col w-full flex-1 px-20 text-center">
 
         <h1 className="text-5xl font-bold mt-8" style={{ lineHeight: '1.2' }}>
-        Make your buyers 'awww' with our  <br /> AI transformed
+        Make your buyers &apos;awww&apos; with our  <br /> AI transformed
          <a className="text-purple-600 hover:text-purple-700" href="#"> Product Photography!</a>
         </h1>
         
         <p className="mt-6 text-2xl">
-          You don't need a studio for stunning product photos.
+          You don&apos;t need a studio for stunning product photos.
         </p>
 
 
@@ -99,18 +101,18 @@ export default function Home() {
          <div className="mt-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {/* <img src="http://localhost:8000/product_images/product_photo.png" alt="Product 1" className="rounded-lg shadow-lg"/> this is how we can an image from product_images directory of main.py file, we have an endpoint there with name 'product_images' */}
 
-            <img src="/arokart.png" alt="Product 1" className="rounded-lg shadow-lg"/>
-            <img src="/earbudsOrange.png" alt="Product 2" className="rounded-lg shadow-lg"/>
-            <img src="/primeBlue.png" alt="Product 3" className="rounded-lg shadow-lg"/>
-            <img src="/clearSnackBar.png" alt="Product 4" className="rounded-lg shadow-lg"/>
-            <img src="/juiceBottle.png" alt="Product 5" className="rounded-lg shadow-lg"/>
-            <img src="/olipop.png" alt="Product 6" className="rounded-lg shadow-lg"/>
-            <img src="/female_glasses.png" alt="Product 7" className="rounded-lg shadow-lg"/>
-            <img src="/perfume.png" alt="Product 8" className="rounded-lg shadow-lg"/>
-            <img src="/arokartPalm.png" alt="Product 9" className="rounded-lg shadow-lg"/>
-            <img src="/faceMask.png" alt="Product 10" className="rounded-lg shadow-lg"/>
-            <img src="/supplement_bottle.png" alt="Product 11" className="rounded-lg shadow-lg"/>
-            <img src="/lipstick.png" alt="Product 12" className="rounded-lg shadow-lg"/>
+            <img src="/arokart.png" alt="Product 1" width={500} height={300} className="rounded-lg shadow-lg"/>
+            <img src="/earbudsOrange.png" alt="Product 2" width={500} height={300} className="rounded-lg shadow-lg"/>
+            <img src="/primeBlue.png" alt="Product 3" width={500} height={300} className="rounded-lg shadow-lg"/>
+            <img src="/clearSnackBar.png" alt="Product 4" width={500} height={300} className="rounded-lg shadow-lg"/>
+            <img src="/juiceBottle.png" alt="Product 5" width={500} height={300} className="rounded-lg shadow-lg"/>
+            <img src="/olipop.png" alt="Product 6" width={500} height={300} className="rounded-lg shadow-lg"/>
+            <img src="/female_glasses.png" alt="Product 7" width={500} height={300} className="rounded-lg shadow-lg"/>
+            <img src="/perfume.png" alt="Product 8" width={500} height={300} className="rounded-lg shadow-lg"/>
+            <img src="/arokartPalm.png" alt="Product 9" width={500} height={300} className="rounded-lg shadow-lg"/>
+            <img src="/faceMask.png" alt="Product 10" width={500} height={300} className="rounded-lg shadow-lg"/>
+            <img src="/supplement_bottle.png" alt="Product 11" width={500} height={300} className="rounded-lg shadow-lg"/>
+            <img src="/lipstick.png" alt="Product 12" width={500} height={300} className="rounded-lg shadow-lg"/>
           
           </div>
 
