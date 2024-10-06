@@ -17,11 +17,21 @@ export const config = {
 // Function to refine the photography request using FastAPI
 async function refinePhotography(inputDetails, productPhotoUrl, referencePhotoUrl) {
   try {
-    const response = await axios.post('http://127.0.0.1:8000/refine-photo/', {
+
+    // Use the environment variable for FastAPI URL
+    const fastApiUrl = process.env.NEXT_PUBLIC_FAST_API_LIVE_URL + '/refine-photo/';
+    const response = await axios.post(fastApiUrl, {
       input_details: inputDetails,
       product_photo_url: productPhotoUrl,
       reference_photo_url: referencePhotoUrl,
     });
+
+
+    // const response = await axios.post('http://127.0.0.1:8000/refine-photo/', {
+    //   input_details: inputDetails,
+    //   product_photo_url: productPhotoUrl,
+    //   reference_photo_url: referencePhotoUrl,
+    // });
 
     // Extract the GPT-4o result and the generated image filename  //wasnot here
     const gpt4oResult = response.data.gpt4o_result;
