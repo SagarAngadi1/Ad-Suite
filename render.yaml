@@ -6,7 +6,8 @@ services:
     env: node  # Use 'node' since it's a Web Service, not static
     plan: free # Adjust based on your usage
     buildCommand: npm install && npm run build
-    startCommand: npm start  # Runs the production Next.js server
+    startCommand: npm start 
+    #startCommand: npm start  # Runs the production Next.js server
     # envVars:
     #   - key: MONGODB_URI
     #     value: mongodb+srv://sagar:ZmfCsvn2GHmiPKyt@advideocluster.811rpxw.mongodb.net/AdVideoCluster?retryWrites=true&w=majority
@@ -54,7 +55,9 @@ services:
     env: python
     plan: free # You can upgrade this based on your needs
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port 8000  # No --reload for production
+    startCommand:  uvicorn main:app --host 0.0.0.0 --port $PORT  # No --reload for production
+
+    #startCommand: uvicorn app.main:app --host 0.0.0.0 --port 8000  # No --reload for production
     # envVars:
     #   - key: OPENAI_API_KEY
     #     value: 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
