@@ -5,6 +5,7 @@ import connectToDatabase from '../../../utils/mongoose';
 import User from '../../../models/User';              // Importing the User model
 import Photography from '../../../models/Photography'; // Your Photography model/schema
 import axios from 'axios'; // Import axios for making the request to FastAPI
+import { uploadFile } from '../../../utils/s3'; // Import the uploadFile function
 
 
 // Disable default body parser
@@ -14,17 +15,30 @@ export const config = {
   },
 };
 
+
+
+
 // Function to refine the photography request using FastAPI
 async function refinePhotography(inputDetails, productPhotoUrl, referencePhotoUrl) {
   try {
 
-    // Use the environment variable for FastAPI URL
     const fastApiUrl = process.env.NEXT_PUBLIC_FAST_API_LIVE_URL + '/refine-photo/';
+
     const response = await axios.post(fastApiUrl, {
       input_details: inputDetails,
       product_photo_url: productPhotoUrl,
       reference_photo_url: referencePhotoUrl,
     });
+   
+
+    // }, {
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   },
+    //   timeout: 60000
+    // });
+
+    
 
 
     // const response = await axios.post('http://127.0.0.1:8000/refine-photo/', {
@@ -33,19 +47,27 @@ async function refinePhotography(inputDetails, productPhotoUrl, referencePhotoUr
     //   reference_photo_url: referencePhotoUrl,
     // });
 
-    // Extract the GPT-4o result and the generated image filename  //wasnot here
+    // Extract the GPT-4o result and the generated image filename 
     const gpt4oResult = response.data.gpt4o_result;
-    const generatedProductPhoto = response.data.Generated_Product_Photo;
+    //const generatedProductPhoto = response.data.Generated_Product_Photo; COMMENTED THIS NOW
+    const generatedProductPhotoURL = response.data.Generated_Product_Photo_URL;
  
-    // Return both values
-    return { gpt4oResult, generatedProductPhoto }; 
+    //return { gpt4oResult, generatedProductPhoto }; THIS WAS WHAT IT WAS, COMMENDTED NOW
+    return { gpt4oResult, generatedProductPhotoURL}; 
 
 
   } catch (error) {
-    console.error('Error refining photography details:', error);
-    return null;
+    console.error('Error refining photography details:', error.response?.data || error.message);
+   return { 
+    success: false,
+    message: 'Error occurred while refining photography details.',
+    details: error.response?.data || error.message
+  };
   }
 }
+
+
+
 
 
 
@@ -79,33 +101,17 @@ const handler = async (req, res) => {
       console.log('Product Photo:', productPhoto);
       console.log('Reference Photo:', referencePhoto);
       console.log('userId:', userId);
-
-
-
-
-       //These are required to send the photos to fastAPi , Generate URLs for the uploaded images to send to main.py gpt-4o 
-      // const baseUrl = `${req.protocol}://${req.get('host')}`; // e.g., http://localhost:3000
-       const baseUrl = `${req.headers['x-forwarded-proto'] || 'http'}://${req.headers.host}`; // Fallback to 'http' if 'x-forwarded-proto' is not available
-       const productPhotoUrl = productPhoto ? `${baseUrl}/uploads/${productPhoto.newFilename}` : '';
-       const referencePhotoUrl = referencePhoto ? `${baseUrl}/uploads/${referencePhoto.newFilename}` : '';
-       
-      // Ensure the uploaded files are properly handled, these are required to store in database
-       const productPhotoPath = productPhoto ? `/uploads/${productPhoto.newFilename}` : '';
-       const referencePhotoPath = referencePhoto ? `/uploads/${referencePhoto.newFilename}` : '';
-
-
-       
+ 
       try {
 
         await connectToDatabase();
 
         const userId = Array.isArray(fields.userId) ? fields.userId[0] : fields.userId;
-
         const user = await User.findById(userId);
 
-
-        //const user = await fetchCurrentUser(req); //fetching method from here to
         console.log('Current User:', user);
+
+
         if (!user) {
           console.log('Error: User not found ');
           return res.status(404).json({ message: 'User not found' });
@@ -116,26 +122,48 @@ const handler = async (req, res) => {
           console.log('Not enough credits:', user.credits);
           return res.status(400).json({ message: 'Not enough credits' });
         }
+
  
+         // Upload to S3
+         let productPhotoS3Url = '';
+         let referencePhotoS3Url = '';
+
+
+         if (productPhoto) {
+          const productPhotoName = `${Date.now()}-${productPhoto.originalFilename}`;
+          const productPhotoBuffer = fs.readFileSync(productPhoto.filepath);
+          const result = await uploadFile(productPhotoBuffer, productPhotoName);
+          productPhotoS3Url = result.Location; // S3 URL for the product photo
+        }
+
+        if (referencePhoto) {
+          const referencePhotoName = `${Date.now()}-${referencePhoto.originalFilename}`;
+          const referencePhotoBuffer = fs.readFileSync(referencePhoto.filepath);
+          const result = await uploadFile(referencePhotoBuffer, referencePhotoName);
+          referencePhotoS3Url = result.Location; // S3 URL for the reference photo
+        }
     
 
-        //I was here
         const inputDetails = Array.isArray(fields.inputDetails) ? fields.inputDetails[0] : fields.inputDetails;
-        
 
-       // Call FastAPI to refine the input details
-       const refinedInput = await refinePhotography(inputDetails, productPhotoUrl, referencePhotoUrl);
-       console.log('Refined Photography Data:', refinedInput);
+       
 
+
+        // Call FastAPI to refine the input details
+        const refinedInput = await refinePhotography(inputDetails, productPhotoS3Url, referencePhotoS3Url);
         if (!refinedInput) {
           return res.status(500).json({ success: false, error: 'Error refining photography details' });
         }
+       console.log('Refined Photography Data:', refinedInput);
+
 
         // Save the photography details to the database
         const newPhotography = new Photography({
           inputDetails: inputDetails, 
-          productPhoto: productPhotoPath, 
-          referencePhoto: referencePhotoPath, 
+          productPhoto: productPhotoS3Url, 
+          referencePhoto: referencePhotoS3Url,
+     
+          
         });
 
         await newPhotography.save();
@@ -150,7 +178,9 @@ const handler = async (req, res) => {
            success: true,
            data: newPhotography, 
            refinedInput: refinedInput.gpt4oResult, 
-          generatedProductPhoto: refinedInput.generatedProductPhoto
+           //generatedProductPhoto: refinedInput.generatedProductPhoto,  COMMENDTED THIS NOW
+           generatedProductPhotoURL: refinedInput.generatedProductPhotoURL //WAS NOT HERE, ADdED AFTER CHATGPT IMAGE URL
+
         }); 
       } catch (error) {
         console.error("Error saving photography details:", error);

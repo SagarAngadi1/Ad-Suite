@@ -8,6 +8,12 @@ import base64
 import time
 from fastapi.staticfiles import StaticFiles #this was not present
 from fastapi.middleware.cors import CORSMiddleware
+import boto3  #Import boto3 for S3 interaction
+from botocore.exceptions import NoCredentialsError
+import logging
+
+
+
 
 
 
@@ -20,7 +26,8 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # You can also set to ["*"] to allow all origins
+    #allow_origins=["http://localhost:3000"],  # You can also set to ["*"] to allow all origins #THE ISSUE IS HERE
+    allow_origins=["*"],  # You can also set to ["*"] to allow all origins #THE ISSUE IS HERE
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
@@ -28,18 +35,20 @@ app.add_middleware(
 
 # Initialize OpenAI async client
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-#client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY", "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"))
+
+logging.basicConfig(level=logging.DEBUG)
+
 
 
 # Eleven Labs API key
 ELEVEN_LABS_API_KEY = os.getenv("ELEVEN_LABS_API_KEY")
 ELEVEN_LABS_VOICE_ID = os.getenv("ELEVEN_LABS_VOICE_ID", "Your_Default_Voice_ID")  # Default voice ID
 
-# Directory to store product images BELOW TWO LINES WERE NOT PRESENT
+# Directory to store product images 
 image_directory = "product_images"
 
 # Serve the product images from this directory
-app.mount("/product_images", StaticFiles(directory=image_directory), name="product_images")
+#app.mount("/product_images", StaticFiles(directory=image_directory), name="product_images") #REMOVED NOW TO WORK IN PRODUCTION
 
 
 
@@ -60,7 +69,51 @@ class AdScriptRequest(BaseModel):
     ad_script_prompt: str 
 
 
-    # Helper function to encode image to base64
+
+
+
+def upload_to_s3(file_buffer, file_name):
+
+    # Initialize the boto3 S3 client
+    s3 = boto3.client(
+        's3',
+        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+        region_name=os.getenv('AWS_REGION')
+    )
+
+    bucket_name = os.getenv('S3_BUCKET_NAME')
+
+    # Define the S3 upload parameters
+    params = {
+        'Bucket': bucket_name,
+        'Key': file_name,
+        'Body': file_buffer,  # The actual image buffer (content).
+        'ContentType': 'image/jpeg',  # Adjust based on the file type
+        #'ACL': 'public-read'  # Optional: Make the file publicly accessible
+    }
+
+    try:
+        # Upload the buffer to S3 using put_object
+        response = s3.put_object(**params)
+
+        # Check if the response is successful
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            s3_url = f"https://{bucket_name}.s3.{os.getenv('AWS_REGION')}.amazonaws.com/{file_name}"
+            print(f"Generated S3 url: {s3_url}")
+            return s3_url
+        else:
+            raise HTTPException(status_code=500, detail="Failed to upload file to S3")
+
+    except Exception as e:
+        print(f"Error uploading file to S3: {str(e)}")
+        raise HTTPException(status_code=500, detail="An error occurred during the S3 upload.")
+
+
+
+
+
+    # Helper function to encode image to base64 THIS WAS PRESENT EARLIER
 def image_to_base64(image_url):
     response = requests.get(image_url)
     if response.status_code == 200:
@@ -71,9 +124,11 @@ def image_to_base64(image_url):
 
 # Define request model for product photography input
 class PhotographyRequest(BaseModel):
+   
     product_photo_url: str
     reference_photo_url: str
     input_details: str
+
 
 
 # Root route
@@ -85,7 +140,7 @@ def read_root():
 @app.post("/refine-photo/")
 async def process_images(request: PhotographyRequest):
 
-
+    # THESE WERE HERE EARLIER
     product_photo_url = request.product_photo_url
     reference_photo_url = request.reference_photo_url
     input_details = request.input_details
@@ -94,16 +149,18 @@ async def process_images(request: PhotographyRequest):
     print(f"Received reference photo URL: {reference_photo_url}")
     print(f"Received input details: {input_details}")
 
+
+
     try:
-        # Convert images to base64
+        # Convert image urls to base64 THIS WAS HERE EARLIER, because we need to send the base64 format to got
         product_photo_base64 = image_to_base64(product_photo_url) if product_photo_url else None
         reference_photo_base64 = image_to_base64(reference_photo_url) if reference_photo_url else None
 
         # Prepare the messages list
         messages = []
 
-        # Logic when both product photo and reference photo are present
-        if product_photo_url and reference_photo_url:
+        # Logic when both product photo and reference photo are present //THIS WAS EARLIER
+        if product_photo_url and reference_photo_url:  
             messages.append({
                 "role": "user",
                 "content": [
@@ -150,7 +207,7 @@ async def process_images(request: PhotographyRequest):
 
 
         # Logic when only reference photo is present
-        elif reference_photo_url:
+        elif reference_photo_url: #THIS WAS EARLIER
             messages.append({
                 "role": "user",
                 "content": [
@@ -235,27 +292,49 @@ async def process_images(request: PhotographyRequest):
 
         # GPT-4o Vision model API call with base64 images
         response = await client.chat.completions.create(
-            model="gpt-4o",  # Ensure you're using the Vision-enabled model
+            model="gpt-4o",  
             messages=messages,
             max_tokens=1000
         )
 
         # Get the result from GPT-4o
         gpt4o_result = response.choices[0].message.content.strip()
-
         print(f"GPT-4o Vision Result: {gpt4o_result}")
 
-      
         product_photo_filename = generate_product_photo(gpt4o_result)
 
+
+
+
+
         if product_photo_filename:
-            print(f"Product photography saved as: {product_photo_filename}")
+            print(f"Product photography saved as toop: {product_photo_filename}")
+            # Assuming the file is saved locally, get the file path and name ADDED FROM CHATGPT
+
+             #problem starts from below line
+            file_path = os.path.join(image_directory, product_photo_filename)
+            print(f"file_path2: {file_path}")
+
+
+            
+            # Read the file content into a buffer
+            with open(file_path, "rb") as image_file:
+             image_buffer = image_file.read()
+
+            s3_url = upload_to_s3(image_buffer, product_photo_filename)
+
+            print(f"Generated photo url: {s3_url}")
+
+            # Upload the file to S3 and get the S3 URL
+            
+
         else:
             print("Failed to generate product photography.")
 
             
-        return {"gpt4o_result": gpt4o_result,
-                "Generated_Product_Photo": product_photo_filename}
+        # return {"gpt4o_result": gpt4o_result,
+        #         "Generated_Product_Photo": product_photo_filename, "Generated_Product_Photo_URL": s3_url}
+        return {"gpt4o_result": gpt4o_result, "Generated_Product_Photo_URL": s3_url}
     
   
     except Exception as e:
@@ -264,9 +343,6 @@ async def process_images(request: PhotographyRequest):
     
  
          # Call the function to generate the product photo using the Flux model
-  
-
-
 # Function to generate a product photography image using Flux model
 def generate_product_photo(image_prompt):
     url = "https://api.hyperbolic.xyz/v1/image/generation"
@@ -298,27 +374,13 @@ def generate_product_photo(image_prompt):
             timestamp = int(time.time())  # Unix timestamp
             image_filename = f"product_photo_{timestamp}.png"
 
-            #was not here, both this and its below snippet
             image_path = os.path.join(image_directory, image_filename)
-
-            # headers = {
-            #        'Content-Disposition': f'attachment; filename={image_filename}',
-            #         'Access-Control-Expose-Headers': 'Content-Disposition'
-            #        }
-            
 
              # Decode and save the image in 'public/product_images'
             with open(image_path, "wb") as img_file:
                 img_file.write(base64.b64decode(image_data))
             
-
-            # # Decode and save the image locally  PRESENT EARLIER
-            # with open(image_filename, "wb") as img_file:
-            #     img_file.write(base64.b64decode(image_data))
-
-
-            print(f"Product photo generated and saved as {image_filename}")
-            #return FileResponse(image_path, headers=headers)
+            print(f"Generated Product photo generated and saved as {image_filename}")
             return image_filename
 
 

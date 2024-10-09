@@ -19,6 +19,20 @@ app.use('/api/ads', adsRouter);      //This line tells the Express application t
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+//added now for uploads issue
+// const uploadsPath = path.join(__dirname, 'public', 'uploads');
+// app.use('/uploads', express.static(uploadsPath));
+
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
+
+app.get('/', (req, res) => {       //This line defines a simple route handler for the root URL (/). When a GET request is made to the root URL, it sends back the text 'Hello World!'.
+  res.send('Hello World!');
+});
+
+app.listen(port, () => {           //This line starts the server and listens on the specified port (3000)
+  console.log(`Server running at http://localhost:${port}`);
+});
 
 
 //since we started using formidable in savedAd.js for handling file uploads, we now dont have to use multer, next-connect
@@ -45,11 +59,4 @@ app.use(express.json());
 
 
 
-app.get('/', (req, res) => {       //This line defines a simple route handler for the root URL (/). When a GET request is made to the root URL, it sends back the text 'Hello World!'.
-  res.send('Hello World!');
-});
-
-app.listen(port, () => {           //This line starts the server and listens on the specified port (3000)
-  console.log(`Server running at http://localhost:${port}`);
-});
 

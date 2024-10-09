@@ -141,9 +141,10 @@ const ProductPhotography = ({ currentUser }) => {
       setIsLoading(false);
 
       if (res.ok) {
-        // Create image URL based on the returned filename //was not here
       const generatedPhoto = data.generatedProductPhoto;
-      const generatedImagePath = `http://127.0.0.1:8000/product_images/${generatedPhoto}?t=${new Date().getTime()}`;
+      //const generatedImagePath = `http://127.0.0.1:8000/product_images/${generatedPhoto}?t=${new Date().getTime()}`;
+      
+      const generatedImagePath = data.generatedProductPhotoURL
       setGeneratedImageUrl(generatedImagePath);
 
    
