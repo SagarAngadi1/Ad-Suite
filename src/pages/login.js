@@ -47,7 +47,7 @@ const Login = () => {
     <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-gradient-to-br from-purple-50 to-indigo-100">
       <h1 className="text-2xl mb-4">Log In</h1>
 
-      <form onSubmit={handleLogin} className="w-1/3 flex flex-col">
+      <form onSubmit={handleLogin} className="w-full p-2 md:w-1/3 flex flex-col">
         <input
           type="email"
           placeholder="Email"

@@ -45,7 +45,7 @@ export default function SignUp() {      //Exports the SignUp function as the def
       <h1 className="text-2xl mb-4">Sign Up</h1>
 
 
-      <form onSubmit={handleSubmit} className="w-1/3 flex flex-col">
+      <form onSubmit={handleSubmit} className="w-full p-2 md:w-1/3 flex flex-col">
         <input
           type="email"
           placeholder="Email"

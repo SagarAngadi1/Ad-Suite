@@ -31,36 +31,26 @@ async function refinePhotography(inputDetails, productPhotoUrl, referencePhotoUr
     });
    
 
-    // }, {
-    //   headers: {
-    //     'Content-Type': 'application/json'
-    //   },
-    //   timeout: 60000
-    // });
-
-    
-
-
     // const response = await axios.post('http://127.0.0.1:8000/refine-photo/', {
     //   input_details: inputDetails,
     //   product_photo_url: productPhotoUrl,
     //   reference_photo_url: referencePhotoUrl,
     // });
 
+    
     // Extract the GPT-4o result and the generated image filename 
     const gpt4oResult = response.data.gpt4o_result;
-    //const generatedProductPhoto = response.data.Generated_Product_Photo; COMMENTED THIS NOW
     const generatedProductPhotoURL = response.data.Generated_Product_Photo_URL;
+
  
-    //return { gpt4oResult, generatedProductPhoto }; THIS WAS WHAT IT WAS, COMMENDTED NOW
     return { gpt4oResult, generatedProductPhotoURL}; 
 
 
   } catch (error) {
-    console.error('Error refining photography details:', error.response?.data || error.message);
+    console.error('Error refining photography details in function:', error.response?.data || error.message);
    return { 
     success: false,
-    message: 'Error occurred while refining photography details.',
+    message: 'Error occurred while refining photography details in function.',
     details: error.response?.data || error.message
   };
   }

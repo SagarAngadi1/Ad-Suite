@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import boto3  #Import boto3 for S3 interaction
 from botocore.exceptions import NoCredentialsError
 import logging
+import replicate
 
 
 
@@ -39,6 +40,10 @@ client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 logging.basicConfig(level=logging.DEBUG)
 
 
+replicate_api_token = os.getenv('REPLICATE_API_TOKEN') 
+
+if not replicate_api_token:
+    raise EnvironmentError("REPLICATE_API_TOKEN not found in environment variables")
 
 # Eleven Labs API key
 ELEVEN_LABS_API_KEY = os.getenv("ELEVEN_LABS_API_KEY")
@@ -341,15 +346,14 @@ async def process_images(request: PhotographyRequest):
         print(f"Error processing images with GPT-4o: {str(e)}")
         raise HTTPException(status_code=500, detail="An error occurred while processing your request")
     
- 
-         # Call the function to generate the product photo using the Flux model
-# Function to generate a product photography image using Flux model
+
+
+# Main function to run the workflow
 def generate_product_photo(image_prompt):
     url = "https://api.hyperbolic.xyz/v1/image/generation"
     headers = {
         "Content-Type": "application/json",
         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpYW5hc3NhZ2FyQGdtYWlsLmNvbSJ9.51t6Z8ZHmoDC_tyxt3T12GEj8jaa9oaLpucZtQBcviU"  # Replace with your actual API key
-       # "Authorization": "Bearer YOUR_API_KEY"  # Replace with your actual API key
     }
     data = {
         "model_name": "FLUX.1-dev",
@@ -394,6 +398,134 @@ def generate_product_photo(image_prompt):
         print(f"Exception while generating product photo: {str(e)}")
         return None
     # uvicorn main:app --reload
+    
+    
+    # Set the input for the Replicate model using GPT-4o's response as part of the input prompt
+    # input_data = {
+    #     "workflow_json": f"""
+    #     {{
+    #         "3": {{
+    #             "inputs": {{
+    #                 "seed": 156680208700286,
+    #                 "steps": 10,
+    #                 "cfg": 2.5,
+    #                 "sampler_name": "dpmpp_2m_sde",
+    #                 "scheduler": "karras",
+    #                 "denoise": 1,
+    #                 "model": ["4", 0],
+    #                 "positive": ["6", 0],
+    #                 "negative": ["7", 0],
+    #                 "latent_image": ["5", 0]
+    #             }},
+    #             "class_type": "KSampler",
+    #             "_meta": {{
+    #                 "title": "KSampler"
+    #             }}
+    #         }},
+    #         "4": {{
+    #             "inputs": {{
+    #                 "ckpt_name": "SDXL-Flash.safetensors"
+    #             }},
+    #             "class_type": "CheckpointLoaderSimple",
+    #             "_meta": {{
+    #                 "title": "Load Checkpoint"
+    #             }}
+    #         }},
+    #         "5": {{
+    #             "inputs": {{
+    #                 "width": 1024,
+    #                 "height": 1024,
+    #                 "batch_size": 1
+    #             }},
+    #             "class_type": "EmptyLatentImage",
+    #             "_meta": {{
+    #                 "title": "Empty Latent Image"
+    #             }}
+    #         }},
+    #         "6": {{
+    #             "inputs": {{
+    #                 "text": "beautiful scenery nature glass bottle landscape, purple galaxy bottle",
+    #                 "clip": ["4", 1]
+    #             }},
+    #             "class_type": "CLIPTextEncode",
+    #             "_meta": {{
+    #                 "title": "CLIP Text Encode (Prompt)"
+    #             }}
+    #         }},
+    #         "7": {{
+    #             "inputs": {{
+    #                 "text": "text, watermark",
+    #                 "clip": ["4", 1]
+    #             }},
+    #             "class_type": "CLIPTextEncode",
+    #             "_meta": {{
+    #                 "title": "CLIP Text Encode (Prompt)"
+    #             }}
+    #         }},
+    #         "8": {{
+    #             "inputs": {{
+    #                 "samples": ["3", 0],
+    #                 "vae": ["4", 2]
+    #             }},
+    #             "class_type": "VAEDecode",
+    #             "_meta": {{
+    #                 "title": "VAE Decode"
+    #             }}
+    #         }},
+    #         "9": {{
+    #             "inputs": {{
+    #                 "filename_prefix": "ComfyUI",
+    #                 "images": ["8", 0]
+    #             }},
+    #             "class_type": "SaveImage",
+    #             "_meta": {{
+    #                 "title": "Save Image"
+    #             }}
+    #         }}
+    #     }}
+    #     """,
+    #     "output_quality": 80
+    # }
+
+    # # Run the model on Replicate
+    # try:
+    #     output = replicate.run(
+    #         "fofr/any-comfyui-workflow:ca6589497a1d31922ec4e2b7c4d17d4a168bc6ac6d0971b2c8c60fc3de0fee4b",
+    #         input=input_data
+    #     )
+    #     print(f"Generated image URL: {output[0]}")  # Display the generated image URL
+    # except Exception as e:
+    #     print(f"Error running Replicate model: {e}")
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
 
 
 

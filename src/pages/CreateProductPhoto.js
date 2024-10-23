@@ -6,7 +6,6 @@ import Head from 'next/head';
 import Link from 'next/link';
 import axios from 'axios'; // Import axios
 import { useRouter } from 'next/router'; // Correct import
-import Image from 'next/image';
 
 
 
@@ -42,6 +41,14 @@ const ProductPhotography = ({ currentUser }) => {
       fetchUser();
     }
   }, [currentUser]);
+
+  const addCredits = () => {
+    // Navigate to index.js with a query parameter 'scrollToPricing'
+    router.push({
+      pathname: '/',
+      query: { scrollToPricing: 'true' },
+    });
+  };
 
 
 
@@ -130,7 +137,7 @@ const ProductPhotography = ({ currentUser }) => {
     setIsLoading(true);
 
     try {
-      const res = await fetch('/api/savePhotography', {
+      const res = await fetch('/api/getNews', {
         method: 'POST',
         body: formData,
       });
@@ -208,46 +215,75 @@ const ProductPhotography = ({ currentUser }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex flex-col items-center">
+      
       <Head>
-        <title>Create Product Photography - AdVideo</title>
-        <meta name="description" content="Create professional product photography with AdVideo." />
-        <link rel="icon" href="/favicon.ico" />
+        <title>Create Studio Level Product Photography - AdSuite</title>
+        <meta name="description" content="Create professional studio-level product photography effortlessly using AdSuite." />
+        <meta name="keywords" content="Product photography, Studio level, AdSuite, Professional images, AI photography, Ads" />
+        <meta name="robots" content="index, follow" />
+        <link rel="icon" href="/logo_newblue.png" />
+        {/* Open Graph Meta Tags for better social sharing */}
+        <meta property="og:title" content="Create professional studio-level product photography effortlessly using AdSuite." />
+        <meta property="og:description" content="Create professional studio-level product photography effortlessly using AdSuite." />
+        <meta property="og:image" content="/logo_newblue.png" />
+        <meta property="og:url" content="https://adsuite.org/CreateProductPhoto" />
+        <meta property="og:type" content="product" />
+        {/* Structured Data (JSON-LD) for SEO */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": "Studio Level Product Photography",
+            "image": "https://adsuite.org/logo_newblue.png",
+            "description": "Create professional-level product photography using AdSuite's AI-powered tools.",
+            "brand": "AdSuite",
+            "offers": {
+              "@type": "Offer",
+              "url": "https://adsuite.org/CreateProductPhoto",
+              "priceCurrency": "USD",
+              "price": "19",
+              "availability": "https://schema.org/InStock"
+            }
+          })}
+        </script>
       </Head>
 
-      <header className="w-full bg-white  shadow-md">
-        <nav className="container mx-auto px-0 py-3">
-         <div className="flex justify-between items-center">
 
-         <div className="flex-2 items-center -ms-20">
-           <p className="text-xl font-bold text-purple-600 ms-0"> AdSuite - Product Photography </p>
+      <header className="w-full bg-white  shadow-md">
+        <nav className="container mx-auto px-0 py-2">
+         <div className="flex-row space-y-2  justify-between items-center sm:flex">
+
+         <div className="flex-2 items-center ms-4 lg:-ms-20">
+          <h1 className="text-lg sm:text-2xl font-bold text-purple-600 -ms-2">Product Photography</h1>  {/* Use <h1> for page title */}
         </div>
 
-        
         {user ? (
-           <div className="flex items-center space-x-4 -me-24">
+           <div className="flex space-x-4 items-center me-2 lg:-me-24 ">
            {/* Credits Display */}
-           <div className="flex items-center border border-purple-500 rounded-2xl py-1 px-1">
-           <span className="text-purple-500 font-bold">{user.credits}</span> 
+           <div className="flex items-center border border-purple-500 rounded-2xl py-1 px-1 ms-0.5">
+           <span className="text-purple-500 font-bold text-xs sm:text-sm">{user.credits}</span> 
              {/* <span className="text-purple-500 font-bold">150</span> Set the dynamic value here */}
-             <span className="ml-2 text-sm text-white bg-purple-500 rounded-2xl py-1 px-4">Credits</span>
+              <button className="bg-purple-500 text-white text-xs sm:text-sm ml-0.5 py-1 px-2 font-bold rounded-2xl  hover:bg-purple-700 transition duration-300 ms-4"onClick={addCredits}>
+              Credits
+              </button>
            </div>
  
            {/* User Email */}
-           <p className="bg-purple-500 text-white text-sm py-2 px-4 font-bold rounded-full hover:bg-purple-700 transition duration-300">
+           <p className="bg-purple-500 text-white text-xs px-2 py-2 sm:text-sm  sm:px-3 sm:font-bold rounded-full hover:bg-purple-700 transition duration-300">
              {user.email}
            </p>
          </div>
         ) : (
-          <div className="flex space-x-2 -me-24">
+          <div className="flex space-x-1 md:space-x-2  lg:-me-24">
 
             <Link href="/login">
-              <button className="bg-purple-500 text-white text-sm py-2 px-4 font-bold rounded-2xl  hover:bg-purple-700 transition duration-300 ms-4">
+              <button className="bg-purple-500 text-white text-xs py-1.5 px-2 md:py-2 md:px-4 md:font-bold rounded-xl md:text-sm md:rounded-2xl  hover:bg-purple-700 transition duration-300 ms-2 md:ms-4">
                 Login
               </button>
             </Link>
 
             <Link href="/signup">
-              <button className="bg-purple-500 text-white text-sm py-2 px-4 font-bold rounded-2xl  hover:bg-purple-700 transition duration-300 ms-4">
+              <button className="bg-purple-500 text-white text-xs py-1.5 px-2 md:py-2 md:px-4 md:font-bold rounded-xl md:text-sm md:rounded-2xl hover:bg-purple-700 transition duration-300 ms-2 md:ms-4">
                 Sign Up
               </button>
             </Link>
@@ -266,11 +302,10 @@ const ProductPhotography = ({ currentUser }) => {
 
       <main className="w-full flex flex-col flex-1 p-6 bg-gradient-to-br from-purple-50 to-indigo-100">
 
-        
-          
            {/* Display the generated image and download button */}
       {generatedImageUrl && (
-        <div className="relative w-1/2 mx-auto rounded-lg flex flex-col items-center mt-0 mb-8 p-2">
+        //<div className="relative w-1/2 mx-auto rounded-lg flex flex-col items-center mt-0 mb-8 p-2">
+        <div className="relative w-full md:w-1/2 mx-auto rounded-lg flex flex-col items-center mt-8 mb-8 p-2">
           <h2 className="text-slate-500 font-semibold mb-2">Generated Product Photo:</h2>
           <div className="relative w-4/5 max-w-lg h-auto">
           <img
@@ -308,14 +343,18 @@ const ProductPhotography = ({ currentUser }) => {
 
 
 
+        {/* <div className="w-full p-1 flex flex-row flex-grow rounded-lg bg-transparent"> original one*/} 
+        <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 rounded-lg bg-transparent">
+        {/* <div className="w-full flex flex-col md:flex-row md:flex-grow gap-6 rounded-lg bg-transparent"> kinda of working that makes elements grow in large size, add md:w-1/3 to all the three elements */}
 
-        <div className="w-full p-1 flex flex-row flex-grow rounded-lg bg-transparent">
+
 
 
           {/* Product Image Upload Block */}
-          <div className="w-1/3 me-6 bg-white rounded-lg p-3 flex flex-col  flex-grow justify-between">
+          <div className="bg-white rounded-lg p-3 flex flex-col flex-grow justify-between">
+          {/* <div className="w-1/3 me-6 bg-white rounded-lg p-3 flex flex-col  flex-grow justify-between"></div> */}
             
-            <label className="block text-sm font-bold text-slate-500 mb-2 mt-4 ms-4">A. Upload Product Photo:</label>
+            <label className="block text-sm font-bold text-slate-500 sm:mb-2 sm:mt-4 sm:ms-4">A. Upload Product Photo:</label>
             
              {/* Product Image Preview */}
              {productImagePreview && (
@@ -328,6 +367,7 @@ const ProductPhotography = ({ currentUser }) => {
 
 
             <div className="relative h-1/2 w-full max-w-xs mx-auto mt-6 mb-4">
+
               <input
                 type="file"
                 accept="image/*"
@@ -353,9 +393,11 @@ const ProductPhotography = ({ currentUser }) => {
 
 
           {/* Reference Image Upload Block */}
-          <div className="w-1/3 me-6 bg-white rounded-lg p-3 flex flex-col flex-grow justify-between">
+          <div className=" bg-white rounded-lg p-3 flex flex-col justify-between">
+          {/* <div className="w-1/3 me-6 bg-white rounded-lg p-3 flex flex-col flex-grow justify-between"> */}
 
-            <label className="block text-sm font-bold text-slate-500 mb-2 mt-4 ms-4">B. Upload Reference Photo:</label>
+
+            <label className="block text-sm font-bold text-slate-500 sm:mb-2 sm:mt-4 sm:ms-4">B. Upload Reference Photo:</label>
             
             {/* Reference Image Preview */}
             {referenceImagePreview && (
@@ -391,12 +433,12 @@ const ProductPhotography = ({ currentUser }) => {
 
 
           {/* Input Details Block */}
-          <div className="w-1/3 bg-white rounded-lg p-3 flex flex-col flex-grow">
+          <div className=" bg-white rounded-lg p-3 flex flex-col  justify-between">
 
-            <label className="block text-sm font-bold text-slate-500 mb-2 mt-4 ms-4">C. Any details or inputs you want to add? (Optional):</label>
+            <label className="block text-sm font-bold text-slate-500 sm:mb-2 sm:mt-4 sm:ms-4">C. Any details or inputs you want to add? (Optional):</label>
             
             <textarea
-              className="w-full h-1/2 p-4 mb-4 border border-gray-200 rounded-xl bg-white shadow-sm mt-2"
+              className="w-full h-full p-4 mb-4 border border-gray-200 rounded-xl bg-white shadow-sm mt-2"
               placeholder="You can include any additional inputs like, nature, color, tone, style of your product photography."
               value={inputDetails}
               onChange={(e) => {
