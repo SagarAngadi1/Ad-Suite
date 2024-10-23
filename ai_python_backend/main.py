@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import boto3  #Import boto3 for S3 interaction
 from botocore.exceptions import NoCredentialsError
 import logging
-import replicate
+#import replicate
 
 
 
