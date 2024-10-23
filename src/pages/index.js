@@ -347,7 +347,7 @@ export default function Home({ currentUser }) {
 
   <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-8">
     <p>Contact: <a href="mailto:ianassagar@gmail.com" className="text-blue-500 hover:underline">ianassagar@gmail.com</a></p>
-    <a href="/privacypolicy" className="text-blue-500 hover:underline">Privacy Policy</a>
+    <Link href="/privacypolicy" className="text-blue-500 hover:underline">Privacy Policy</Link>
   </div>
 </footer>
 
