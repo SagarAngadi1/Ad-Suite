@@ -40,10 +40,10 @@ client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 logging.basicConfig(level=logging.DEBUG)
 
 
-replicate_api_token = os.getenv('REPLICATE_API_TOKEN') 
+#replicate_api_token = os.getenv('REPLICATE_API_TOKEN') 
 
-if not replicate_api_token:
-    raise EnvironmentError("REPLICATE_API_TOKEN not found in environment variables")
+# if not replicate_api_token:
+#     raise EnvironmentError("REPLICATE_API_TOKEN not found in environment variables")
 
 # Eleven Labs API key
 ELEVEN_LABS_API_KEY = os.getenv("ELEVEN_LABS_API_KEY")
