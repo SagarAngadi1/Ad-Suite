@@ -22,20 +22,20 @@ export const config = {
 async function refinePhotography(inputDetails, productPhotoUrl, referencePhotoUrl) {
   try {
 
-    //const fastApiUrl = process.env.NEXT_PUBLIC_FAST_API_LIVE_URL + '/refine-photo/';
+    const fastApiUrl = process.env.NEXT_PUBLIC_FAST_API_LIVE_URL + '/refine-photo/';
 
-    // const response = await axios.post(fastApiUrl, {
-    //   input_details: inputDetails,
-    //   product_photo_url: productPhotoUrl,
-    //   reference_photo_url: referencePhotoUrl,
-    // });
-   
-
-    const response = await axios.post('http://127.0.0.1:8000/refine-photo/', {
+    const response = await axios.post(fastApiUrl, {
       input_details: inputDetails,
       product_photo_url: productPhotoUrl,
       reference_photo_url: referencePhotoUrl,
     });
+   
+
+    // const response = await axios.post('http://127.0.0.1:8000/refine-photo/', {
+    //   input_details: inputDetails,
+    //   product_photo_url: productPhotoUrl,
+    //   reference_photo_url: referencePhotoUrl,
+    // });
 
     
     // Extract the GPT-4o result and the generated image filename 
