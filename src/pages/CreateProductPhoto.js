@@ -137,7 +137,7 @@ const ProductPhotography = ({ currentUser }) => {
     setIsLoading(true);
 
     try {
-      const res = await fetch('/api/getNews', {
+      const res = await fetch('/api/savePhotography', {
         method: 'POST',
         body: formData,
       });

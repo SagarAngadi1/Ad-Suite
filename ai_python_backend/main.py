@@ -10,11 +10,10 @@ from fastapi.staticfiles import StaticFiles #this was not present
 from fastapi.middleware.cors import CORSMiddleware
 import boto3  #Import boto3 for S3 interaction
 from botocore.exceptions import NoCredentialsError
-import logging
-#import replicate
-
-
-
+#import logging
+import replicate
+import json
+import random
 
 
 
@@ -37,17 +36,29 @@ app.add_middleware(
 # Initialize OpenAI async client
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
+
+baseten_api_key = os.getenv("BASETEN_API_KEY")
+model_id = os.getenv("BASETEN_MODEL_ID")
+
+if not baseten_api_key or not model_id:
+    raise EnvironmentError("Missing Baseten API Key or Model ID in environment variables")
 
 
-#replicate_api_token = os.getenv('REPLICATE_API_TOKEN') 
 
-# if not replicate_api_token:
-#     raise EnvironmentError("REPLICATE_API_TOKEN not found in environment variables")
+
+replicate_api_token = os.getenv('REPLICATE_API_TOKEN') 
+
+if not replicate_api_token:
+    raise EnvironmentError("REPLICATE_API_TOKEN not found in environment variables")
 
 # Eleven Labs API key
 ELEVEN_LABS_API_KEY = os.getenv("ELEVEN_LABS_API_KEY")
 ELEVEN_LABS_VOICE_ID = os.getenv("ELEVEN_LABS_VOICE_ID", "Your_Default_Voice_ID")  # Default voice ID
+
+comfyui_api_token = os.getenv('COMFYUI_API_TOKEN')
+
+COMFYUI_API_URL = "https://api.comfyonline.app/api/run_workflow"
 
 # Directory to store product images 
 image_directory = "product_images"
@@ -306,7 +317,7 @@ async def process_images(request: PhotographyRequest):
         gpt4o_result = response.choices[0].message.content.strip()
         print(f"GPT-4o Vision Result: {gpt4o_result}")
 
-        product_photo_filename = generate_product_photo(gpt4o_result)
+        product_photo_filename = generate_product_photo(gpt4o_result, product_photo_url)
 
 
 
@@ -316,7 +327,7 @@ async def process_images(request: PhotographyRequest):
             print(f"Product photography saved as toop: {product_photo_filename}")
             # Assuming the file is saved locally, get the file path and name ADDED FROM CHATGPT
 
-             #problem starts from below line
+            #problem starts from below line
             file_path = os.path.join(image_directory, product_photo_filename)
             print(f"file_path2: {file_path}")
 
@@ -339,7 +350,7 @@ async def process_images(request: PhotographyRequest):
             
         # return {"gpt4o_result": gpt4o_result,
         #         "Generated_Product_Photo": product_photo_filename, "Generated_Product_Photo_URL": s3_url}
-        return {"gpt4o_result": gpt4o_result, "Generated_Product_Photo_URL": s3_url}
+        return {"gpt4o_result": gpt4o_result, "Generated_Product_Photo_URL": s3_url} #HERE JUST ADD replicate url
     
   
     except Exception as e:
@@ -348,154 +359,804 @@ async def process_images(request: PhotographyRequest):
     
 
 
-# Main function to run the workflow
-def generate_product_photo(image_prompt):
-    url = "https://api.hyperbolic.xyz/v1/image/generation"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpYW5hc3NhZ2FyQGdtYWlsLmNvbSJ9.51t6Z8ZHmoDC_tyxt3T12GEj8jaa9oaLpucZtQBcviU"  # Replace with your actual API key
-    }
-    data = {
-        "model_name": "FLUX.1-dev",
-        "prompt": image_prompt,
-        "steps": 50,
-        "cfg_scale": 2,
-        "enable_refiner": False,
-        "height": 1024,
-        "width": 1024,
-        "backend": "auto"
-    }
 
+
+
+def generate_product_photo(image_prompt, product_photo_url):
     try:
-        # Send POST request to the Flux API
-        response = requests.post(url, headers=headers, json=data)
 
-        # Handle the response
-        if response.status_code == 200:
-            # Extract the base64-encoded image from the response
-            image_data = response.json()["images"][0]["image"]
+        payload = {
+            "input": {
+                "CLIPTextEncode_text_4": image_prompt,  # The prompt for the product photo
+                "LoadImage_image_7": product_photo_url,  # The input product photo URL
+                "CLIPTextEncode_text_13": "",
+                "CLIPTextEncode_text_37": "",
+                "CLIPTextEncode_text_38": "",
+                "CLIPTextEncode_text_55": "",
+                "CLIPTextEncode_text_56": ""
+            },
+            "workflow_id": "4b636913-b7b2-4866-b5aa-b034c2625430",  # Replace with your workflow_id
+             #"webhook": ""  # Optional: Provide a webhook URL if you want async results
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {comfyui_api_token}"
+        }
 
-            timestamp = int(time.time())  # Unix timestamp
-            image_filename = f"product_photo_{timestamp}.png"
+        response = requests.post(COMFYUI_API_URL, headers=headers, json=payload)
 
-            image_path = os.path.join(image_directory, image_filename)
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Failed to start ComfyUI workflow")
 
-             # Decode and save the image in 'public/product_images'
-            with open(image_path, "wb") as img_file:
-                img_file.write(base64.b64decode(image_data))
-            
-            print(f"Generated Product photo generated and saved as {image_filename}")
-            return image_filename
+        response_json = response.json()
+        task_id = response_json.get("data", {}).get("task_id")
 
+        if not task_id:
+            raise HTTPException(status_code=500, detail="Task ID not received from API")
 
+        # Step 3: Poll the webhook response or task status
+        print(f"Task ID: {task_id} - Waiting for output...")
 
+        output_url_list = None
+        for _ in range(150):  # Retry for ~30 seconds
+            status_response = requests.get(
+                f"https://api.comfyonline.app/api/task_status/{task_id}",
+                headers=headers
+            )
+
+            if status_response.status_code != 200:
+                raise HTTPException(status_code=500, detail="Failed to get task status")
+
+            status_json = status_response.json()
+            status = status_json.get("status")
+
+            if status == "COMPLETED":
+                output_url_list = status_json.get("output", {}).get("output_url_list")
+                break
+            elif status == "ERROR":
+                raise HTTPException(status_code=500, detail="Task failed with error status")
+
+            time.sleep(2)  # Wait for 2 seconds before polling again
+
+        if not output_url_list or not output_url_list[0]:
+            raise HTTPException(status_code=500, detail="Output image URL not received")
+
+        # Step 4: Download and save the generated image
+        output_image_url = output_url_list[0]
+        image_response = requests.get(output_image_url)
+
+        if image_response.status_code == 200:
+            output_file_path = "generated_image.png"
+            with open(output_file_path, "wb") as img_file:
+                img_file.write(image_response.content)
+            print(f"Image saved locally as: {output_file_path}") 
+            return output_file_path  # Return only the local file path   
+            #return {"message": "Image generated successfully", "image_path": output_file_path}
         else:
-            print(f"Error generating product photo: {response.status_code}")
-            print(response.json())
-            return None
+            raise HTTPException(status_code=500, detail="Failed to download the generated image")
 
     except Exception as e:
-        print(f"Exception while generating product photo: {str(e)}")
-        return None
-    # uvicorn main:app --reload
-    
-    
-    # Set the input for the Replicate model using GPT-4o's response as part of the input prompt
-    # input_data = {
-    #     "workflow_json": f"""
-    #     {{
-    #         "3": {{
-    #             "inputs": {{
-    #                 "seed": 156680208700286,
-    #                 "steps": 10,
-    #                 "cfg": 2.5,
-    #                 "sampler_name": "dpmpp_2m_sde",
-    #                 "scheduler": "karras",
-    #                 "denoise": 1,
-    #                 "model": ["4", 0],
-    #                 "positive": ["6", 0],
-    #                 "negative": ["7", 0],
-    #                 "latent_image": ["5", 0]
-    #             }},
-    #             "class_type": "KSampler",
-    #             "_meta": {{
-    #                 "title": "KSampler"
-    #             }}
-    #         }},
-    #         "4": {{
-    #             "inputs": {{
-    #                 "ckpt_name": "SDXL-Flash.safetensors"
-    #             }},
-    #             "class_type": "CheckpointLoaderSimple",
-    #             "_meta": {{
-    #                 "title": "Load Checkpoint"
-    #             }}
-    #         }},
-    #         "5": {{
-    #             "inputs": {{
-    #                 "width": 1024,
-    #                 "height": 1024,
-    #                 "batch_size": 1
-    #             }},
-    #             "class_type": "EmptyLatentImage",
-    #             "_meta": {{
-    #                 "title": "Empty Latent Image"
-    #             }}
-    #         }},
-    #         "6": {{
-    #             "inputs": {{
-    #                 "text": "beautiful scenery nature glass bottle landscape, purple galaxy bottle",
-    #                 "clip": ["4", 1]
-    #             }},
-    #             "class_type": "CLIPTextEncode",
-    #             "_meta": {{
-    #                 "title": "CLIP Text Encode (Prompt)"
-    #             }}
-    #         }},
-    #         "7": {{
-    #             "inputs": {{
-    #                 "text": "text, watermark",
-    #                 "clip": ["4", 1]
-    #             }},
-    #             "class_type": "CLIPTextEncode",
-    #             "_meta": {{
-    #                 "title": "CLIP Text Encode (Prompt)"
-    #             }}
-    #         }},
-    #         "8": {{
-    #             "inputs": {{
-    #                 "samples": ["3", 0],
-    #                 "vae": ["4", 2]
-    #             }},
-    #             "class_type": "VAEDecode",
-    #             "_meta": {{
-    #                 "title": "VAE Decode"
-    #             }}
-    #         }},
-    #         "9": {{
-    #             "inputs": {{
-    #                 "filename_prefix": "ComfyUI",
-    #                 "images": ["8", 0]
-    #             }},
-    #             "class_type": "SaveImage",
-    #             "_meta": {{
-    #                 "title": "Save Image"
-    #             }}
-    #         }}
-    #     }}
-    #     """,
-    #     "output_quality": 80
-    # }
+        raise HTTPException(status_code=500, detail=str(e))
 
-    # # Run the model on Replicate
-    # try:
-    #     output = replicate.run(
-    #         "fofr/any-comfyui-workflow:ca6589497a1d31922ec4e2b7c4d17d4a168bc6ac6d0971b2c8c60fc3de0fee4b",
-    #         input=input_data
-    #     )
-    #     print(f"Generated image URL: {output[0]}")  # Display the generated image URL
-    # except Exception as e:
-    #     print(f"Error running Replicate model: {e}")
+
+    
+
+
+
+
+
+# def generate_product_photo(image_prompt, product_photo_url):
+#     try:
+#         # Prepare payload for Baseten API call
+#         values = {
+#             "positive_prompt": "Create a high-quality, studio-level product photograph featuring",
+#             "negative_prompt": "blurry, low quality",
+#             "image_input": product_photo_url,
+#             "seed": random.randint(1, 1000000)
+#             #"seed": request.seed
+#         }
+
+#         # Make API request to Baseten model
+#         response = requests.post(
+#             f"https://model-4w5jm7r3.api.baseten.co/deployment/qz0dl83/predict",
+#             #f"https://model-{model_id}.api.baseten.co/development/predict",
+#             headers={"Authorization": f"Api-Key {baseten_api_key}"},
+#             json={"workflow_values": values}
+#         )
+
+#         # Handle response
+#         if response.status_code == 200:
+#             res_json = response.json()
+#             preamble = "data:image/png;base64,"
+#             output_image = base64.b64decode(res_json["result"][1]["image"].replace(preamble, ""))
+
+#             # Save image locally (optional)
+#             output_file_path = "generated_image.png"
+#             with open(output_file_path, 'wb') as img_file:
+#                 img_file.write(output_image)
+
+#             # Return response with success message
+#             return {"message": "Image generated successfully", "image_path": output_file_path}
+#         else:
+#             raise HTTPException(status_code=500, detail="Model API call failed")
+
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))    
+  
+
+
+
+
+
+
+
+
+
+
+# def generate_product_photo(image_prompt, product_photo_url):
+#     # Escaping quotes in the image_prompt to prevent JSON format issues
+#     safe_image_prompt = image_prompt.replace('"', '\\"')
+#     safe_product_photo_url = product_photo_url.replace('"', '\\"')
+
+
+#     # Create the input data JSON safely with escaped image_prompt
+#     workflow_json = {
+#   "1": {
+#     "inputs": {
+#       "value": 1536
+#     },
+#     "class_type": "INTConstant"
+#   },
+#   "2": {
+#     "inputs": {
+#       "value": 1024
+#     },
+#     "class_type": "INTConstant"
+#   },
+#   "3": {
+#     "inputs": {
+#       "image": safe_product_photo_url,
+#       "upload": "image"
+#     },
+#     "class_type": "LoadImage"
+#   },
+#   "4": {
+#     "inputs": {
+#       "sam_model": "sam_vit_h (2.56GB)",
+#       "grounding_dino_model": "GroundingDINO_SwinT_OGC (694MB)",
+#       "threshold": 0.3,
+#       "detail_method": "GuidedFilter",
+#       "detail_erode": 6,
+#       "detail_dilate": 6,
+#       "black_point": 0.15,
+#       "white_point": 0.99,
+#       "process_detail": True,
+#       "prompt": "subject",
+#       "device": "cuda",
+#       "max_megapixels": 2,
+#       "image": [
+#         "3",
+#         0
+#       ]
+#     },
+#     "class_type": "LayerMask: SegmentAnythingUltra"
+#   },
+#   "5": {
+#     "inputs": {
+#       "images": [
+#         "4",
+#         0
+#       ]
+#     },
+#     "class_type": "PreviewImage"
+#   },
+#   "7": {
+#     "inputs": {
+#       "invert_mask": True,
+#       "blend_mode": "normal",
+#       "opacity": 100,
+#       "x_percent": 50,
+#       "y_percent": 65,
+#       "mirror": "None",
+#       "scale": 0.32,
+#       "aspect_ratio": 1,
+#       "rotate": 0,
+#       "transform_method": "lanczos",
+#       "anti_aliasing": 0,
+#       "background_image": [
+#         "8",
+#         0
+#       ],
+#       "layer_image": [
+#         "4",
+#         0
+#       ],
+#       "layer_mask": [
+#         "10",
+#         3
+#       ]
+#     },
+#     "class_type": "LayerUtility: ImageBlendAdvance V2"
+#   },
+#   "8": {
+#     "inputs": {
+#       "panel_width": [
+#         "1",
+#         0
+#       ],
+#       "panel_height": [
+#         "2",
+#         0
+#       ],
+#       "fill_color": "custom",
+#       "fill_color_hex": [
+#         "10",
+#         1
+#       ]
+#     },
+#     "class_type": "CR Color Panel"
+#   },
+#   "9": {
+#     "inputs": {
+#       "images": [
+#         "8",
+#         0
+#       ]
+#     },
+#     "class_type": "PreviewImage"
+#   },
+#   "10": {
+#     "inputs": {
+#       "mode": "main_color",
+#       "color_of": "mask",
+#       "remove_bkgd_method": "none",
+#       "invert_mask": False,
+#       "mask_grow": 0,
+#       "image": [
+#         "4",
+#         0
+#       ],
+#       "mask": [
+#         "4",
+#         1
+#       ]
+#     },
+#     "class_type": "LayerUtility: GetColorToneV2"
+#   },
+#   "11": {
+#     "inputs": {
+#       "images": [
+#         "7",
+#         0
+#       ]
+#     },
+#     "class_type": "PreviewImage"
+#   },
+#   "15": {
+#     "inputs": {
+#       "mask": [
+#         "7",
+#         1
+#       ]
+#     },
+#     "class_type": "InvertMask"
+#   },
+#   "17": {
+#     "inputs": {
+#       "ckpt_name": "flux1-dev-fp8.safetensors"
+#     },
+#     "class_type": "CheckpointLoaderSimple"
+#   },
+#   "18": {
+#     "inputs": {
+#       "text": safe_image_prompt,
+#       "clip": [
+#         "17",
+#         1
+#       ]
+#     },
+#     "class_type": "CLIPTextEncode"
+#   },
+#   "19": {
+#     "inputs": {
+#       "text": "",
+#       "clip": [
+#         "17",
+#         1
+#       ]
+#     },
+#     "class_type": "CLIPTextEncode"
+#   },
+#   "20": {
+#     "inputs": {
+#       "positive": [
+#         "18",
+#         0
+#       ],
+#       "negative": [
+#         "19",
+#         0
+#       ],
+#       "vae": [
+#         "17",
+#         2
+#       ],
+#       "pixels": [
+#         "7",
+#         0
+#       ],
+#       "mask": [
+#         "15",
+#         0
+#       ]
+#     },
+#     "class_type": "InpaintModelConditioning"
+#   },
+#   "21": {
+#     "inputs": {
+#       "guidance": 3.5,
+#       "conditioning": [
+#         "20",
+#         0
+#       ]
+#     },
+#     "class_type": "FluxGuidance"
+#   },
+#   "22": {
+#     "inputs": {
+#       "seed": 694440766939451,
+#       "steps": 25,
+#       "cfg": 1,
+#       "sampler_name": "euler",
+#       "scheduler": "beta",
+#       "denoise": 1,
+#       "model": [
+#         "17",
+#         0
+#       ],
+#       "positive": [
+#         "21",
+#         0
+#       ],
+#       "negative": [
+#         "20",
+#         1
+#       ],
+#       "latent_image": [
+#         "20",
+#         2
+#       ]
+#     },
+#     "class_type": "KSampler"
+#   },
+#   "23": {
+#     "inputs": {
+#       "samples": [
+#         "22",
+#         0
+#       ],
+#       "vae": [
+#         "17",
+#         2
+#       ]
+#     },
+#     "class_type": "VAEDecode"
+#   },
+#   "24": {
+#     "inputs": {
+#       "images": [
+#         "23",
+#         0
+#       ]
+#     },
+#     "class_type": "PreviewImage"
+#   },
+#   "129": {
+#     "inputs": {
+#       "mask": [
+#         "15",
+#         0
+#       ]
+#     },
+#     "class_type": "MaskPreview+"
+#   },
+#   "130": {
+#     "inputs": {
+#       "mask": [
+#         "4",
+#         1
+#       ]
+#     },
+#     "class_type": "LayerMask: MaskPreview"
+#   },
+#   "135": {
+#     "inputs": {
+#       "ckpt_name": "realisticVisionV60B1_v51HyperVAE.safetensors"
+#     },
+#     "class_type": "CheckpointLoaderSimple"
+#   },
+#   "136": {
+#     "inputs": {
+#       "vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"
+#     },
+#     "class_type": "VAELoader"
+#   },
+#   "137": {
+#     "inputs": {
+#       "text": "",
+#       "clip": [
+#         "135",
+#         1
+#       ]
+#     },
+#     "class_type": "CLIPTextEncode"
+#   },
+#   "138": {
+#     "inputs": {
+#       "text": "nsfw, blur, worst quality, bad quality, low quality\n",
+#       "clip": [
+#         "135",
+#         1
+#       ]
+#     },
+#     "class_type": "CLIPTextEncode"
+#   },
+#   "140": {
+#     "inputs": {
+#       "pixels": [
+#         "23",
+#         0
+#       ],
+#       "vae": [
+#         "136",
+#         0
+#       ]
+#     },
+#     "class_type": "VAEEncode"
+#   },
+#   "141": {
+#     "inputs": {
+#       "multiplier": 0.18215,
+#       "positive": [
+#         "137",
+#         0
+#       ],
+#       "negative": [
+#         "138",
+#         0
+#       ],
+#       "vae": [
+#         "136",
+#         0
+#       ],
+#       "foreground": [
+#         "140",
+#         0
+#       ]
+#     },
+#     "class_type": "ICLightConditioning"
+#   },
+#   "142": {
+#     "inputs": {
+#       "seed": 0,
+#       "steps": 25,
+#       "cfg": 1.5,
+#       "sampler_name": "dpmpp_2m",
+#       "scheduler": "karras",
+#       "denoise": 1,
+#       "model": [
+#         "144",
+#         0
+#       ],
+#       "positive": [
+#         "141",
+#         0
+#       ],
+#       "negative": [
+#         "141",
+#         1
+#       ],
+#       "latent_image": [
+#         "143",
+#         0
+#       ]
+#     },
+#     "class_type": "KSampler"
+#   },
+#   "143": {
+#     "inputs": {
+#       "pixels": [
+#         "147",
+#         0
+#       ],
+#       "vae": [
+#         "136",
+#         0
+#       ]
+#     },
+#     "class_type": "VAEEncode"
+#   },
+#   "144": {
+#     "inputs": {
+#       "model_path": "iclight_sd15_fc_unet_ldm.safetensors",
+#       "model": [
+#         "135",
+#         0
+#       ]
+#     },
+#     "class_type": "LoadAndApplyICLightUnet"
+#   },
+#   "145": {
+#     "inputs": {
+#       "lama_model": "lama",
+#       "device": "cuda",
+#       "invert_mask": False,
+#       "mask_grow": 25,
+#       "mask_blur": 8,
+#       "image": [
+#         "23",
+#         0
+#       ],
+#       "mask": [
+#         "7",
+#         1
+#       ]
+#     },
+#     "class_type": "LayerUtility: LaMa"
+#   },
+#   "146": {
+#     "inputs": {
+#       "shadow_brightness": 3,
+#       "shadow_saturation": 1,
+#       "shadow_hue": 0,
+#       "shadow_level_offset": 0,
+#       "shadow_range": 0.25,
+#       "highlight_brightness": 1,
+#       "highlight_saturation": 1,
+#       "highlight_hue": 0,
+#       "highlight_level_offset": 0,
+#       "highlight_range": 0.25,
+#       "image": [
+#         "145",
+#         0
+#       ]
+#     },
+#     "class_type": "LayerColor: Color of Shadow & Highlight"
+#   },
+#   "147": {
+#     "inputs": {
+#       "blur": 10
+#     },
+#     "class_type": "LayerFilter: GaussianBlur"
+#   },
+#   "148": {
+#     "inputs": {
+#       "images": [
+#         "145",
+#         0
+#       ]
+#     },
+#     "class_type": "PreviewImage"
+#   },
+#   "149": {
+#     "inputs": {
+#       "images": [
+#         "146",
+#         0
+#       ]
+#     },
+#     "class_type": "PreviewImage"
+#   },
+#   "150": {
+#     "inputs": {
+#       "images": [
+#         "147",
+#         0
+#       ]
+#     },
+#     "class_type": "PreviewImage"
+#   },
+#   "151": {
+#     "inputs": {
+#       "samples": [
+#         "142",
+#         0
+#       ],
+#       "vae": [
+#         "136",
+#         0
+#       ]
+#     },
+#     "class_type": "VAEDecode"
+#   },
+#   "152": {
+#     "inputs": {
+#       "images": [
+#         "151",
+#         0
+#       ]
+#     },
+#     "class_type": "PreviewImage"
+#   },
+#   "153": {
+#     "inputs": {
+#       "ckpt_name": "flux1-schnell-fp8.safetensors"
+#     },
+#     "class_type": "CheckpointLoaderSimple"
+#   },
+#   "154": {
+#     "inputs": {
+#       "text": safe_image_prompt,
+#       "clip": [
+#         "153",
+#         1
+#       ]
+#     },
+#     "class_type": "CLIPTextEncode"
+#   },
+#   "155": {
+#     "inputs": {
+#       "text": "",
+#       "clip": [
+#         "153",
+#         1
+#       ]
+#     },
+#     "class_type": "CLIPTextEncode"
+#   },
+#   "156": {
+#     "inputs": {
+#       "guidance": 3.5,
+#       "conditioning": [
+#         "154",
+#         0
+#       ]
+#     },
+#     "class_type": "FluxGuidance"
+#   },
+#   "157": {
+#     "inputs": {
+#       "seed": 77,
+#       "steps": 20,
+#       "cfg": 1,
+#       "sampler_name": "euler",
+#       "scheduler": "beta",
+#       "denoise": 0.35,
+#       "model": [
+#         "153",
+#         0
+#       ],
+#       "positive": [
+#         "156",
+#         0
+#       ],
+#       "negative": [
+#         "155",
+#         0
+#       ],
+#       "latent_image": [
+#         "158",
+#         0
+#       ]
+#     },
+#     "class_type": "KSampler"
+#   },
+#   "158": {
+#     "inputs": {
+#       "pixels": [
+#         "151",
+#         0
+#       ],
+#       "vae": [
+#         "153",
+#         2
+#       ]
+#     },
+#     "class_type": "VAEEncode"
+#   },
+#   "159": {
+#     "inputs": {
+#       "samples": [
+#         "157",
+#         0
+#       ],
+#       "vae": [
+#         "153",
+#         2
+#       ]
+#     },
+#     "class_type": "VAEDecode"
+#   },
+#   "160": {
+#     "inputs": {
+#       "images": [
+#         "159",
+#         0
+#       ]
+#     },
+#     "class_type": "PreviewImage"
+#   },
+#   "161": {
+#     "inputs": {
+#       "keep_high_freq": 64,
+#       "erase_low_freq": 32,
+#       "mask_blur": 16,
+#       "image": [
+#         "159",
+#         0
+#       ],
+#       "detail_image": [
+#         "7",
+#         0
+#       ],
+#       "mask": [
+#         "7",
+#         1
+#       ]
+#     },
+#     "class_type": "LayerUtility: HLFrequencyDetailRestore"
+#   },
+#   "165": {
+#     "inputs": {
+#       "images": [
+#         "161",
+#         0
+#       ]
+#     },
+#     "class_type": "PreviewImage"
+#   }
+# }
+    
+#     input_data = {
+#         "workflow_json": json.dumps(workflow_json),  # Serializing to JSON string
+#         "output_quality": 80
+#     }
+
+#     # Debug: Print input_data to verify JSON is formatted correctly
+#     print("Serialized input_data for replicate.run:", input_data)
+
+#     # Run the model on Replicate
+#     try:
+#         output = replicate.run(
+
+#             "fofr/any-comfyui-workflow:10990543610c5a77a268f426adb817753842697fa0fa5819dc4a396b632a5c15",
+#            # "fofr/any-comfyui-workflow:ca6589497a1d31922ec4e2b7c4d17d4a168bc6ac6d0971b2c8c60fc3de0fee4b", #this was earlier
+#             input=input_data
+#         )
+        
+#         # Debug: Check if output is None or contains an error
+#         if output is None:
+#             print("Replicate returned None, likely due to an error in processing the input data.")
+#         else:
+#             print(f"Generated image URL: {output[0]}")  # Display the generated image URL
+
+#     except Exception as e:
+#         print(f"Error running Replicate model: {e}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+    
 
 
 
