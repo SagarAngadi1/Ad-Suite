@@ -38,11 +38,11 @@ client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 #logging.basicConfig(level=logging.DEBUG)
 
-baseten_api_key = os.getenv("BASETEN_API_KEY")
-model_id = os.getenv("BASETEN_MODEL_ID")
+# baseten_api_key = os.getenv("BASETEN_API_KEY")
+# model_id = os.getenv("BASETEN_MODEL_ID")
 
-if not baseten_api_key or not model_id:
-    raise EnvironmentError("Missing Baseten API Key or Model ID in environment variables")
+# if not baseten_api_key or not model_id:
+#     raise EnvironmentError("Missing Baseten API Key or Model ID in environment variables")
 
 
 
