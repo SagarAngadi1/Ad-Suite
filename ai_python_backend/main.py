@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import boto3  #Import boto3 for S3 interaction
 from botocore.exceptions import NoCredentialsError
 #import logging
-import replicate
+#import replicate
 import json
 import random
 
@@ -47,10 +47,10 @@ if not baseten_api_key or not model_id:
 
 
 
-replicate_api_token = os.getenv('REPLICATE_API_TOKEN') 
+#replicate_api_token = os.getenv('REPLICATE_API_TOKEN') 
 
-if not replicate_api_token:
-    raise EnvironmentError("REPLICATE_API_TOKEN not found in environment variables")
+# if not replicate_api_token:
+#     raise EnvironmentError("REPLICATE_API_TOKEN not found in environment variables")
 
 # Eleven Labs API key
 ELEVEN_LABS_API_KEY = os.getenv("ELEVEN_LABS_API_KEY")
