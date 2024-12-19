@@ -369,11 +369,11 @@ def generate_product_photo(image_prompt, product_photo_url):
             "input": {
                 "CLIPTextEncode_text_4": image_prompt,  # The prompt for the product photo
                 "LoadImage_image_7": product_photo_url,  # The input product photo URL
-                "CLIPTextEncode_text_13": "",
-                "CLIPTextEncode_text_37": "",
-                "CLIPTextEncode_text_38": "",
-                "CLIPTextEncode_text_55": "",
-                "CLIPTextEncode_text_56": ""
+                "CLIPTextEncode_text_13": "nsfw, worst, blur, poor quality"
+                # "CLIPTextEncode_text_37": "",
+                # "CLIPTextEncode_text_38": "",
+                # "CLIPTextEncode_text_55": "",
+                # "CLIPTextEncode_text_56": ""
             },
             "workflow_id": "4b636913-b7b2-4866-b5aa-b034c2625430",  # Replace with your workflow_id
              #"webhook": ""  # Optional: Provide a webhook URL if you want async results
@@ -383,20 +383,29 @@ def generate_product_photo(image_prompt, product_photo_url):
             "Authorization": f"Bearer {comfyui_api_token}"
         }
 
-        response = requests.post(COMFYUI_API_URL, headers=headers, json=payload)
+        print(f"Payload prepared: {payload}")
+        print(f"Headers prepared: {headers}")
 
+        response = requests.post(COMFYUI_API_URL, headers=headers, json=payload)
+        print(f"POST request sent to {COMFYUI_API_URL}, awaiting response...")
+         
         if response.status_code != 200:
+            print(f"Error: Received status code {response.status_code} from ComfyUI API")
             raise HTTPException(status_code=500, detail="Failed to start ComfyUI workflow")
 
         response_json = response.json()
+        print(f"Received response: {response_json}")
+
         task_id = response_json.get("data", {}).get("task_id")
 
         if not task_id:
+            print(f"Error: Task ID not found in response")
             raise HTTPException(status_code=500, detail="Task ID not received from API")
 
-        # Step 3: Poll the webhook response or task status
+       
         print(f"Task ID: {task_id} - Waiting for output...")
 
+        # Step 3: Poll the webhook response or task status
         output_url_list = None
         for _ in range(150):  # Retry for ~30 seconds
             status_response = requests.get(
@@ -405,37 +414,47 @@ def generate_product_photo(image_prompt, product_photo_url):
             )
 
             if status_response.status_code != 200:
+                print(f"Error: Received status code {status_response.status_code} while polling task status")
                 raise HTTPException(status_code=500, detail="Failed to get task status")
 
             status_json = status_response.json()
+            print(f"Task status response: {status_json}")
+
             status = status_json.get("status")
+            print(f"Current task status: {status}")
 
             if status == "COMPLETED":
                 output_url_list = status_json.get("output", {}).get("output_url_list")
+                print(f"Task completed. Output URL list: {output_url_list}")
                 break
             elif status == "ERROR":
+                print(f"Error: Task failed with error status")
                 raise HTTPException(status_code=500, detail="Task failed with error status")
 
             time.sleep(2)  # Wait for 2 seconds before polling again
 
         if not output_url_list or not output_url_list[0]:
+            print(f"Error: Output image URL not received")
             raise HTTPException(status_code=500, detail="Output image URL not received")
 
         # Step 4: Download and save the generated image
         output_image_url = output_url_list[0]
+        print(f"Downloading generated image from: {output_image_url}")
         image_response = requests.get(output_image_url)
 
         if image_response.status_code == 200:
             output_file_path = "generated_image.png"
             with open(output_file_path, "wb") as img_file:
                 img_file.write(image_response.content)
-            print(f"Image saved locally as: {output_file_path}") 
+            print(f"Image downloaded and saved locally as: {output_file_path}")    
             return output_file_path  # Return only the local file path   
             #return {"message": "Image generated successfully", "image_path": output_file_path}
         else:
+            print(f"Error: Failed to download the generated image. Status code: {image_response.status_code}")
             raise HTTPException(status_code=500, detail="Failed to download the generated image")
 
     except Exception as e:
+        print(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
