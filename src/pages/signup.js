@@ -26,7 +26,10 @@ export default function SignUp() {      //Exports the SignUp function as the def
 
     if (res.ok) {
       alert('User created successfully!');
-      router.push('/CreateProductPhoto');
+      router.push({
+        pathname: '/',
+      });
+      //router.push('/CreateProductPhoto');
 
 
     } else {

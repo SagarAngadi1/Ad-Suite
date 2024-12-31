@@ -28,7 +28,10 @@ const Login = () => {
 
     if (res.ok) {
       alert('Log in successful');
-      router.push('/CreateProductPhoto');
+      router.push({
+        pathname: '/',
+      });
+      // router.push('/CreateProductPhoto');
 
     } else {
       if (data.error === 'User does not exists') {

@@ -6,10 +6,6 @@ import User from '../../../models/User';              // Importing the User mode
 import Photography from '../../../models/Photography'; // Your Photography model/schema
 import axios from 'axios'; // Import axios for making the request to FastAPI
 import { uploadFile } from '../../../utils/s3'; // Import the uploadFile function
-//import base64Img from 'base64-img';
-
-//import dotenv from 'dotenv';
-//dotenv.config();
 
 
 // Disable default body parser
@@ -19,16 +15,7 @@ export const config = {
   },
 };
 
-// const s3 = new aws.S3({
-//   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-//   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-//   region: process.env.AWS_REGION,
-// });
-
-
-
 const COMFYUI_API_URL = "https://api.comfyonline.app/api/run_workflow";
-
 
 // Helper to upload to S3
 async function uploadToS3(fileBuffer, fileName) {
@@ -61,8 +48,9 @@ async function imageToBase64(imageUrl) {
 
 
 
+
 // Function to refine the photography request using FastAPI
-async function refinePhotography(inputDetails, productPhotoUrl, referencePhotoUrl) {
+async function refineAdBanner(inputDetails, productPhotoUrl, referencePhotoUrl) {
   try {
     const productPhotoBase64 = productPhotoUrl
       ? await imageToBase64(productPhotoUrl)
@@ -73,17 +61,21 @@ async function refinePhotography(inputDetails, productPhotoUrl, referencePhotoUr
 
     const messages = [];
 
+
     if (productPhotoUrl && referencePhotoUrl) {
       messages.push({
         role: "user",
         content: [
           {
             type: "text",
-            text: `You are an expert prompt generator specializing in high-quality, studio-level product photography background setup, below are two images: the first is the product photo, and the second is the reference photo. Use the reference photo for reference to give a prompt that generates product photography of the product available in the givem product photo. The prompt you give will be sent to flux image generation model to generate the product photography of the prduct image. Give me a prompt that generates a product photography of much better quality than this below given reference image qulaity.
-            Dont give prompt for product, give only the background and environment setup, because we will use inpainting so you should only give prompt that defines everything other than the product like lightning, color, shade, setup and design elements in backdrop, anything that suits the product, product will be positioned at centre.
-            Dont leave spaces inbetween lines in prompt.
-            Consider the input details in the prompt given by the user, ${inputDetails}.
-            If there are too many small unclear texts, then omit them from prompt.`,
+            text: `You are an expert prompt generator specializing in high-quality, professional level, visually appealing background layout for for an 'ad creative'.Below are two images: the first is the product photo, and the second is the reference banner. Use the reference photo as inspiration like for design, aesthetics, lightning, fonts, etc to design the ad creative for the product provided, don't copy the exact text elements from the reference. The prompt you generate will be sent to the Flux image generation model to create the ad-banner. Ensure the generated banner is of significantly higher quality than the reference banner.
+            These are the ad creative details that needs to be generated in the ad creative, make sure to mention each one of them clealy in the prompt: ${inputDetails}. 
+            The prompt should only describe the advertisement layout, design elements, creative assets, color, shades and lightning—strictly don't describing the product.
+            Don't mention the word 'product' in the prompt, otherwise flux will generate the product aswell. This is because we use inpainting so you should only give prompt that defines everything other than the product. The product will always be positioned at the center of the ad-creative so the elements of the ad creative should be around the centre. Provide a visually balanced design suited to the product type and theme.
+            Make the prompt into 2 paragraphs. The first paragraph should describe the 'top of the ad text', 'OFF badge or text' elements of ad creative and the other paragraph should describe 'Highlight note text' and 'Call to action text' elements.
+            The prompt should always start with 'Design a background layout for an ad-creative...' and continue.
+            Refer to any text elements as 'text' (e.g., 'The top of the ad should say, xyzxyz...') rather than using terms like 'title' or 'bullet points.' Describe the position, style, text font, font size of all elements explicitly.
+            The prompt should be maximum of 120 words.`,
           },
           {
             type: "image_url",
@@ -105,11 +97,14 @@ async function refinePhotography(inputDetails, productPhotoUrl, referencePhotoUr
         content: [
           {
             type: "text",
-            text: `You are an expert prompt generator specializing in high-quality, studio-level product photography, the prompt you give will be sent to flux image generation model to generate the image.Below is the product photo provided by the user, give me a prompt that generates product photography of this given product photo, make both the background and product more classy, sleak, crisp and appealing.
-            Dont give prompt for product, give only the background and environment setup, because we will use inpainting so you should only give prompt that defines everything other than the product like lightning, color, shade, setup and design elements in backdrop, anything that suits the product, product will be positioned at centre.
-            Dont leave spaces inbetween lines in prompt.
-            Consider the input details in the prompt given by the user, ${inputDetails}.
-            Dont tell in the prompt to 'generate something as provided in the photo', because flux model can't see the image so you mention clearly what needs to be generated, flux model just generates according to the prompt you give so they has to be specific words and not like some description to a person. `,
+            text: ` You are an expert prompt generator specializing in high-quality, professional level, visually appealing background layout for for an 'ad creative'. Below is the product photo provided by the user, give prompt to design the ad creative for the product provided. The prompt you generate will be sent to the Flux image generation model to create the ad-banner.
+            These are the ad creative details that needs to be generated in the ad creative, make sure to mention each one of them clealy in the prompt: ${inputDetails}.
+            The prompt should only describe the advertisement layout, design elements, creative assets, color, shades and lightning—strictly don't describing the product.
+            Don't mention the word 'product' in the prompt, otherwise flux will generate the product aswell. This is because we use inpainting so you should only give prompt that defines everything other than the product. The product will always be positioned at the center of the ad-creative so the elements of the ad creative should be around the centre. Provide a visually balanced design suited to the product type and theme.
+            Make the prompt into 2 paragraphs. The first paragraph should describe the 'top of the ad text', 'OFF badge or text' elements of ad creative and the other paragraph should describe 'Highlight note text' and 'Call to action text' elements.
+            The prompt should always start with 'Design a background layout for an ad-creative...' and continue.
+            Refer to any text elements as 'text' (e.g., 'The top of the ad should say, xyzxyz...') rather than using terms like 'title' or 'bullet points.' Describe the position, style, text font, font size of all elements explicitly.
+            The prompt should be maximum of 120 words.`,
           },
           {
             type: "image_url",
@@ -125,7 +120,6 @@ async function refinePhotography(inputDetails, productPhotoUrl, referencePhotoUr
       });
     }
 
-   
 
     // GPT-4o Vision API Call
     const gpt4oResponse = await axios.post(
@@ -144,8 +138,10 @@ async function refinePhotography(inputDetails, productPhotoUrl, referencePhotoUr
 
     const gpt4oResult = gpt4oResponse.data.choices[0].message.content.trim();
 
+
     const generatedProductPhotoURL = await generateProductPhoto(gpt4oResult, productPhotoUrl)
     
+
     async function generateProductPhoto(gpt4oResult, productPhotoUrl) {
       try {
         // Step 1: Prepare the API payload
@@ -257,30 +253,32 @@ async function refinePhotography(inputDetails, productPhotoUrl, referencePhotoUr
 
 
 
+
+
   // try {
 
   //   // const fastApiUrl = process.env.NEXT_PUBLIC_FAST_API_LIVE_URL + '/refine-photo/';
 
   //   // const response = await axios.post(fastApiUrl, {
-  //   //   input_details: inputDetails,
-  //   //   product_photo_url: productPhotoUrl,
-  //   //   reference_photo_url: referencePhotoUrl,
+  //   //   input_details_banner: inputDetails,
+  //   //   product_photo_url_banner: productPhotoUrl,
+  //   //   reference_photo_url_banner: referencePhotoUrl,
   //   // });
    
 
-  //   const response = await axios.post('http://127.0.0.1:8000/refine-photo/', {
-  //     input_details: inputDetails,
-  //     product_photo_url: productPhotoUrl,
-  //     reference_photo_url: referencePhotoUrl,
+  //   const response = await axios.post('http://127.0.0.1:8000/refine-adbanner/', {
+  //     input_details_banner: inputDetails,
+  //     product_photo_url_banner: productPhotoUrl,
+  //     reference_photo_url_banner: referencePhotoUrl,
   //   });
 
     
   //   // Extract the GPT-4o result and the generated image filename 
   //   const gpt4oResult = response.data.gpt4o_result;
-  //   const generatedProductPhotoURL = response.data.Generated_Product_Photo_URL;
+  //   const generatedProductPhotoURL = response.data.Generated_AdBanner_URL;
 
  
-    // return { gpt4oResult, generatedProductPhotoURL}; 
+  //   return { gpt4oResult, generatedProductPhotoURL}; 
 
 
   // } catch (error) {
@@ -291,8 +289,6 @@ async function refinePhotography(inputDetails, productPhotoUrl, referencePhotoUr
   //   details: error.response?.data || error.message
   // };
   // }
-
-
 }
 
 
@@ -319,13 +315,13 @@ const handler = async (req, res) => {
         return res.status(500).send('Error parsing the form');
       }
 
-      const { inputDetails, userId } = fields;
+      const { combinedInputDetails, userId } = fields;
       const productPhoto = files.productImage ? files.productImage[0] : undefined;
       const referencePhoto = files.referenceImage ? files.referenceImage[0] : undefined;
 
 
 
-      console.log('Input Details:', inputDetails);
+      console.log('Input Details:', combinedInputDetails);
       console.log('Product Photo:', productPhoto);
       console.log('Reference Photo:', referencePhoto);
       console.log('userId:', userId);
@@ -372,13 +368,13 @@ const handler = async (req, res) => {
         }
     
 
-        const inputDetails = Array.isArray(fields.inputDetails) ? fields.inputDetails[0] : fields.inputDetails;
+        const combinedInputDetails = Array.isArray(fields.combinedInputDetails) ? fields.combinedInputDetails[0] : fields.combinedInputDetails;
 
        
 
 
         // Call FastAPI to refine the input details
-        const refinedInput = await refinePhotography(inputDetails, productPhotoS3Url, referencePhotoS3Url);
+        const refinedInput = await refineAdBanner(combinedInputDetails, productPhotoS3Url, referencePhotoS3Url);
         if (!refinedInput) {
           return res.status(500).json({ success: false, error: 'Error refining photography details' });
         }
@@ -387,11 +383,10 @@ const handler = async (req, res) => {
 
         // Save the photography details to the database
         const newPhotography = new Photography({
-          inputDetails: inputDetails, 
+          combinedInputDetails: combinedInputDetails, 
           productPhoto: productPhotoS3Url, 
           referencePhoto: referencePhotoS3Url,
      
-          
         });
 
         await newPhotography.save();

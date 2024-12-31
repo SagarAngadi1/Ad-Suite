@@ -23,6 +23,10 @@ export default function Home({ currentUser }) {
     router.push('/CreateProductPhoto');
   };
 
+  const handleNavigationBanner = () => {
+    router.push('/CreateAdBanner');
+  };
+
   const pricingSectionRef = useRef(null);
 
    // Scroll to the pricing section when the Pricing link is clicked
@@ -164,22 +168,22 @@ export default function Home({ currentUser }) {
 
       <Head>
       <title>Create Studio Level Product Photography - AdSuite</title>
-        <meta name="description" content="Create professional studio-level product photography effortlessly using AdSuite." />
-        <meta name="keywords" content="Product photography, Studio level, AdSuite, Professional images, AI photography, Ads" />
+        <meta name="description" content="Create professional studio-level product photography and banner ads effortlessly using AdSuite." />
+        <meta name="keywords" content="Product photography, Studio level, AdSuite, Professional images, AI photography,Ai Ads, Banner Ads, Graphic design" />
         <meta name="robots" content="index, follow" />
         <link rel="icon" href="/logo_newblue.png" />
         <meta name="author" content="AdSuite" />
         {/* Open Graph (OG) meta tags for social sharing */}
-      <meta property="og:title" content="AdSuite - Create Stunning Product Photographies" />
-      <meta property="og:description" content="Create studio-level product photography without spending much. AdSuite provides AI-powered tools to generate professional-quality product images with ease." />
+      <meta property="og:title" content="AdSuite - Create Stunning Product Photographies and Banner Ads" />
+      <meta property="og:description" content="Create studio-level product photography and banner ads without spending much. AdSuite provides AI-powered tools to generate professional-quality product images and banner ads with ease." />
       <meta property="og:image" content="https://www.adsuite.org/logo_newblue.png" />
       <meta property="og:url" content="https://www.adsuite.org/" />
       <meta property="og:type" content="website" />
 
       {/* Twitter Card meta tags for social sharing */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content="AdSuite - Create professional studio-level product photography effortlessly." />
-      <meta name="twitter:description" content="Create studio-level product photography without spending much. AdSuite provides AI-powered tools to generate professional-quality product images with ease." />
+      <meta name="twitter:title" content="AdSuite - Create professional studio-level product photography and banner ads effortlessly." />
+      <meta name="twitter:description" content="Create studio-level product photography and banner ads without spending much. AdSuite provides AI-powered tools to generate professional-quality product images and banner ads with ease." />
       <meta name="twitter:image" content="https://www.adsuite.com/logo_newblue.png" />
 
       {/* Structured Data (JSON-LD) for SEO */}
@@ -189,7 +193,7 @@ export default function Home({ currentUser }) {
             "@type": "Product",
             "name": "Studio Level Product Photography",
             "image": "https://adsuite.org/logo_newblue.png",
-            "description": "Create professional-level product photography using AdSuite's AI-powered tools.",
+            "description": "Create professional-level product photography and banner ads using AdSuite's AI-powered tools.",
             "brand": "AdSuite",
             "offers": {
               "@type": "Offer",
@@ -217,7 +221,7 @@ export default function Home({ currentUser }) {
             <div className="flex space-x-3 items-center">
              
               <a href="#" className="font-bold text-sm sm:text-base text-gray-600 hover:text-purple-500 lg:me-6"onClick={scrollToPricing} >
-                Pricing</a> 
+              Pricing</a> 
 
 
               <button
@@ -225,6 +229,13 @@ export default function Home({ currentUser }) {
                 onClick={handleNavigation}
                >
                 Product Photography
+              </button>
+
+              <button
+                className="bg-purple-500 text-white text-xs sm:text-sm py-1.5 px-3 sm:py-2 sm:px-4 lg:px-6 font-bold rounded-full hover:bg-purple-700 transition duration-300"
+                onClick={handleNavigationBanner}
+               >
+                Ad-Banners
               </button>
             
             </div>
@@ -235,15 +246,17 @@ export default function Home({ currentUser }) {
 
       <main className="flex flex-col w-full flex-1 px-6 sm:px-10 lg:px-20 text-center">
 
-        <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold mt-8 leading-tight" style={{ lineHeight: '1.2' }}>
+        <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold mt-8 leading-tight" style={{ lineHeight: '1.3' }}>
         Make your buyers &apos;awww&apos; with our  <br /> AI transformed <br />
+         <a className="text-purple-600 hover:text-purple-700" onClick={handleNavigationBanner}  href="#"> Ad-Banners </a>
+          and
          <a className="text-purple-600 hover:text-purple-700" onClick={handleNavigation}  href="#"> Product Photography!</a>
         </h1>
 
       
         
-        <p className="mt-6 sm:mt-8 text-xl sm:text-2xl font-serif">
-          You don&apos;t need a studio for stunning product photos.
+        <p className="mt-6 sm:mt-10 text-xl sm:text-2xl font-serif">
+          You don&apos;t need a studio for stunning product photos, neither a graphic designer for converting banner ads.
         </p>
 
 
@@ -253,14 +266,14 @@ export default function Home({ currentUser }) {
 
             <img src="/arokart.png" alt="Product 1" width={500} height={300} className="rounded-lg shadow-lg"/>
             <img src="/earbudsOrange.png" alt="Product 2" width={500} height={300} className="rounded-lg shadow-lg"/>
-            <img src="/primeBlue.png" alt="Product 3" width={500} height={300} className="rounded-lg shadow-lg"/>
+            <img src="/faceMask.png" alt="Product 3" width={500} height={300} className="rounded-lg shadow-lg"/>
             <img src="/clearSnackBar.png" alt="Product 4" width={500} height={300} className="rounded-lg shadow-lg"/>
             <img src="/juiceBottle.png" alt="Product 5" width={500} height={300} className="rounded-lg shadow-lg"/>
             <img src="/olipop.png" alt="Product 6" width={500} height={300} className="rounded-lg shadow-lg"/>
             <img src="/female_glasses.png" alt="Product 7" width={500} height={300} className="rounded-lg shadow-lg"/>
             <img src="/perfume.png" alt="Product 8" width={500} height={300} className="rounded-lg shadow-lg"/>
             <img src="/arokartPalm.png" alt="Product 9" width={500} height={300} className="rounded-lg shadow-lg"/>
-            <img src="/faceMask.png" alt="Product 10" width={500} height={300} className="rounded-lg shadow-lg"/>
+            <img src="/primeBlue.png" alt="Product 10" width={500} height={300} className="rounded-lg shadow-lg"/>
             <img src="/supplement_bottle.png" alt="Product 11" width={500} height={300} className="rounded-lg shadow-lg"/>
             <img src="/lipstick.png" alt="Product 12" width={500} height={300} className="rounded-lg shadow-lg"/>
           
@@ -276,11 +289,12 @@ export default function Home({ currentUser }) {
             {/* Basic Plan */}
            <div className="p-4 sm:p-8 bg-gray-50 rounded-lg shadow-lg">
                <h3 className="text-xl sm:text-2xl font-serif text-black mb-4">Basic Plan</h3>
-               <p className="text-4xl sm:text-5xl font-extrabold text-purple-600 mb-6">
+               <p className="text-4xl sm:text-5xl font-extrabold text-purple-600 mb-8">
                 {currency === 'USD' ? `$${currencyMap[currency].basic}` : `₹${currencyMap[currency].basic}`}
-              </p>
-                {/* <p className="text-4xl sm:text-5xl font-extrabold text-purple-600 mb-6">$19</p> */}
-                <p className="text-base sm:text-lg font-serif text-gray-600 mb-8">100 studio level photography generations per month</p>
+               </p>
+                <p className="text-base sm:text-lg font-serif text-gray-600 mb-4">5,000 Credits per month</p>
+                <p className="text-base sm:text-lg font-serif text-gray-600 mb-8">100 Product photos and Ad-Banners Combined</p>
+
                <button onClick={() => handlePayment('basic')}
                 className="w-full py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
                    Get Started
@@ -301,10 +315,12 @@ export default function Home({ currentUser }) {
       {/* Pro Plan */}
       <div className="p-4 sm:p-8 bg-gray-50 rounded-lg shadow-lg">
         <h3 className="text-xl sm:text-2xl font-serif text-black mb-4">Pro Plan</h3>
-        <p className="text-4xl sm:text-5xl font-extrabold text-purple-600 mb-6">
+        <p className="text-4xl sm:text-5xl font-extrabold text-purple-600 mb-8">
                 {currency === 'USD' ? `$${currencyMap[currency].pro}` : `₹${currencyMap[currency].pro}`}
         </p>
-        <p className="text-base sm:text-lg font-serif text-gray-600 mb-8">200 studio level photography generations per month</p>
+        <p className="text-base sm:text-lg font-serif text-gray-600 mb-4">10,000 Credits per month</p>
+        <p className="text-base sm:text-lg font-serif text-gray-600 mb-8">200 Product photos and Ad-Banners Combined</p>
+        {/* <p className="text-base sm:text-lg font-serif text-gray-600 mb-8">200 studio level photography generations per month</p> */}
         <button onClick={() => handlePayment('pro')}
         className="w-full py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
           Get Started
@@ -318,10 +334,11 @@ export default function Home({ currentUser }) {
       {/* Ultra Plan */}
       <div className="p-4 sm:p-8 bg-gray-50 rounded-lg shadow-lg">
         <h3 className="text-xl sm:text-2xl font-serif text-black mb-4">Ultra Plan</h3>
-        <p className="text-4xl sm:text-5xl font-extrabold text-purple-600 mb-6">
+        <p className="text-4xl sm:text-5xl font-extrabold text-purple-600 mb-8">
                 {currency === 'USD' ? `$${currencyMap[currency].ultra}` : `₹${currencyMap[currency].ultra}`}
         </p>
-        <p className="text-base sm:text-lg font-serif text-gray-600 mb-8">400 studio level photography generations per month</p>
+        <p className="text-base sm:text-lg font-serif text-gray-600 mb-4">20,000 Credits per month</p>
+        <p className="text-base sm:text-lg font-serif text-gray-600 mb-8">400 Product photos and Ad-Banners Combined</p>
         <button onClick={() => handlePayment('ultra')}
         className="w-full py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
           Get Started

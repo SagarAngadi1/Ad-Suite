@@ -50,6 +50,12 @@ const ProductPhotography = ({ currentUser }) => {
     });
   };
 
+  const handleNavigation = () => {
+    router.push({
+      pathname: '/',
+    });
+  };
+
 
 
   // Handle image upload for product photo and show preview
@@ -106,9 +112,14 @@ const ProductPhotography = ({ currentUser }) => {
 
     // Check if neither productImage nor referenceImage is selected
     if (!productImage && !referenceImage) {
-       alert('Please select either a product photo or a reference photo.');
+       alert('Please select atleast a product photo.');
        return;
     }
+
+    if (!productImage) {
+      alert('Product photo is required, please select.');
+      return;
+   }
 
 
     setProgress(0); // Reset progress to 0
@@ -120,7 +131,7 @@ const ProductPhotography = ({ currentUser }) => {
           clearInterval(interval);
           return prev;
         }
-        return prev + 5; // Increment progress by 5%
+        return prev + 1; // Increment progress by 2%
       });
     }, 500); // Progress will increase every 1000ms
 
@@ -254,7 +265,10 @@ const ProductPhotography = ({ currentUser }) => {
          <div className="flex-row space-y-2  justify-between items-center sm:flex">
 
          <div className="flex-2 items-center ms-4 lg:-ms-20">
-          <h1 className="text-lg sm:text-2xl font-bold text-purple-600 -ms-2">Product Photography</h1>  {/* Use <h1> for page title */}
+         <h1 className="text-lg sm:text-2xl font-bold text-purple-600 -ms-2"
+          onClick={handleNavigation}
+          >
+          Product Photography</h1>  {/* Use <h1> for page title */}
         </div>
 
         {user ? (

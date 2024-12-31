@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
     const options = {
       amount: plans[planId].price, // Price in cents (paise)
-      currency: 'INR',
+      currency: 'USD',
       receipt: `receipt_order_${planId}_${Date.now()}`,
     };
 
