@@ -151,12 +151,12 @@ export default function Home({ currentUser }) {
     USD: {
       basic: 19,
       pro: 39,
-      ultra: 59,
+      ultra: 69,
     },
     INR: {
       basic: 1599,
-      pro: 3199,
-      ultra: 4799,
+      pro: 3399,
+      ultra: 5900,
     },
   };
 

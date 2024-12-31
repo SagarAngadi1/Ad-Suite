@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     const plans = {
       basic: { price: 1900, credits: 5000 }, 
       pro: { price: 3900, credits: 10000 },
-      ultra: { price: 5900, credits: 20000 }
+      ultra: { price: 6900, credits: 20000 }
     };
 
     if (!plans[planId]) { // Amount in paise   //If planId is 'basic', then plans[planId] becomes plans['basic'], which retrieves the value 1900. plans[planId] is how JavaScript accesses a value from an object using the key. In this case, the key is the planId, which could be 'basic', 'pro', or 'ultra'.

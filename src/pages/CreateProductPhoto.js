@@ -131,7 +131,7 @@ const ProductPhotography = ({ currentUser }) => {
           clearInterval(interval);
           return prev;
         }
-        return prev + 1; // Increment progress by 2%
+        return prev + 0.5; // Increment progress by 2%
       });
     }, 500); // Progress will increase every 1000ms
 
