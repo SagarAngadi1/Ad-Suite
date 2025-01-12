@@ -167,7 +167,7 @@ export default function Home({ currentUser }) {
      
 
       <Head>
-      <title>Create Studio Level Product Photography - AdSuite</title>
+      <title>Create Studio Level AI Product Photography and Banner Ads - AdSuite</title>
         <meta name="description" content="Create professional studio-level product photography and banner ads effortlessly using AdSuite." />
         <meta name="keywords" content="Product photography, Studio level, AdSuite, Professional images, AI photography,Ai Ads, Banner Ads, Graphic design" />
         <meta name="robots" content="index, follow" />
@@ -288,7 +288,7 @@ export default function Home({ currentUser }) {
       
             {/* Basic Plan */}
            <div className="p-4 sm:p-8 bg-gray-50 rounded-lg shadow-lg">
-               <h3 className="text-xl sm:text-2xl font-serif text-black mb-4">Basic Plan</h3>
+               <h3 className="text-xl sm:text-2xl font-serif text-black mb-4">Basic</h3>
                <p className="text-4xl sm:text-5xl font-extrabold text-purple-600 mb-8">
                 {currency === 'USD' ? `$${currencyMap[currency].basic}` : `₹${currencyMap[currency].basic}`}
                </p>
@@ -314,7 +314,7 @@ export default function Home({ currentUser }) {
       
       {/* Pro Plan */}
       <div className="p-4 sm:p-8 bg-gray-50 rounded-lg shadow-lg">
-        <h3 className="text-xl sm:text-2xl font-serif text-black mb-4">Pro Plan</h3>
+        <h3 className="text-xl sm:text-2xl font-serif text-black mb-4">Pro</h3>
         <p className="text-4xl sm:text-5xl font-extrabold text-purple-600 mb-8">
                 {currency === 'USD' ? `$${currencyMap[currency].pro}` : `₹${currencyMap[currency].pro}`}
         </p>
@@ -333,7 +333,7 @@ export default function Home({ currentUser }) {
       
       {/* Ultra Plan */}
       <div className="p-4 sm:p-8 bg-gray-50 rounded-lg shadow-lg">
-        <h3 className="text-xl sm:text-2xl font-serif text-black mb-4">Ultra Plan</h3>
+        <h3 className="text-xl sm:text-2xl font-serif text-black mb-4">Ultra</h3>
         <p className="text-4xl sm:text-5xl font-extrabold text-purple-600 mb-8">
                 {currency === 'USD' ? `$${currencyMap[currency].ultra}` : `₹${currencyMap[currency].ultra}`}
         </p>

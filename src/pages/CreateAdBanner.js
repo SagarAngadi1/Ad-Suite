@@ -425,7 +425,7 @@ const AdBanner = ({ currentUser }) => {
             <div className=" bg-white rounded-lg p-3 flex flex-col justify-between">
   
   
-              <label className="block text-base font-bold text-gray-800 sm:mb-2 sm:mt-4 sm:ms-4">B. Upload Reference Banner:</label>
+              <label className="block text-base font-bold text-gray-800 sm:mb-2 sm:mt-4 sm:ms-4">B. Upload Reference Banner (Optional):</label>
               
               {/* Reference Image Preview */}
               {referenceImagePreview && (

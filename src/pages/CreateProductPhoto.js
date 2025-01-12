@@ -411,7 +411,7 @@ const ProductPhotography = ({ currentUser }) => {
           {/* <div className="w-1/3 me-6 bg-white rounded-lg p-3 flex flex-col flex-grow justify-between"> */}
 
 
-            <label className="block text-sm font-bold text-slate-500 sm:mb-2 sm:mt-4 sm:ms-4">B. Upload Reference Photo:</label>
+            <label className="block text-sm font-bold text-slate-500 sm:mb-2 sm:mt-4 sm:ms-4">B. Upload Reference Photo (Optional):</label>
             
             {/* Reference Image Preview */}
             {referenceImagePreview && (

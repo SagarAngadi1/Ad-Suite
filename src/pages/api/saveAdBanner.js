@@ -73,7 +73,7 @@ async function refineAdBanner(inputDetails, productPhotoUrl, referencePhotoUrl) 
             The prompt should only describe the advertisement layout, design elements, creative assets, color, shades and lightning—strictly don't describing the product.
             Don't mention the word 'product' in the prompt, otherwise flux will generate the product aswell. This is because we use inpainting so you should only give prompt that defines everything other than the product. The product will always be positioned at the center of the ad-creative so the elements of the ad creative should be around the centre. Provide a visually balanced design suited to the product type and theme.
             Make the prompt into 2 paragraphs. The first paragraph should describe the 'top of the ad text', 'OFF badge or text' elements of ad creative and the other paragraph should describe 'Highlight note text' and 'Call to action text' elements.
-            The prompt should always start with 'Design a background layout for an ad-creative...' and continue.
+            The prompt should always start with 'Design a productless background layout for ad-creative...' and continue.
             Refer to any text elements as 'text' (e.g., 'The top of the ad should say, xyzxyz...') rather than using terms like 'title' or 'bullet points.' Describe the position, style, text font, font size of all elements explicitly.
             The prompt should be maximum of 120 words.`,
           },
@@ -102,7 +102,7 @@ async function refineAdBanner(inputDetails, productPhotoUrl, referencePhotoUrl) 
             The prompt should only describe the advertisement layout, design elements, creative assets, color, shades and lightning—strictly don't describing the product.
             Don't mention the word 'product' in the prompt, otherwise flux will generate the product aswell. This is because we use inpainting so you should only give prompt that defines everything other than the product. The product will always be positioned at the center of the ad-creative so the elements of the ad creative should be around the centre. Provide a visually balanced design suited to the product type and theme.
             Make the prompt into 2 paragraphs. The first paragraph should describe the 'top of the ad text', 'OFF badge or text' elements of ad creative and the other paragraph should describe 'Highlight note text' and 'Call to action text' elements.
-            The prompt should always start with 'Design a background layout for an ad-creative...' and continue.
+            The prompt should always start with 'Design a productless background layout for an ad-creative...' and continue.
             Refer to any text elements as 'text' (e.g., 'The top of the ad should say, xyzxyz...') rather than using terms like 'title' or 'bullet points.' Describe the position, style, text font, font size of all elements explicitly.
             The prompt should be maximum of 120 words.`,
           },

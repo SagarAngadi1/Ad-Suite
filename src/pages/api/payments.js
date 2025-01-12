@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     const { planId, userId } = req.body;
 
     const plans = {
-      basic: { price: 1900, credits: 5000 }, 
+      basic: { price: 10, credits: 5000 }, 
       pro: { price: 3900, credits: 10000 },
       ultra: { price: 6900, credits: 20000 }
     };
