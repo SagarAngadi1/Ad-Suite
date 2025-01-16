@@ -51,6 +51,7 @@ async function imageToBase64(imageUrl) {
 
 // Function to refine the photography request using FastAPI
 async function refineAdBanner(inputDetails, productPhotoUrl, referencePhotoUrl) {
+
   try {
     const productPhotoBase64 = productPhotoUrl
       ? await imageToBase64(productPhotoUrl)
@@ -68,14 +69,14 @@ async function refineAdBanner(inputDetails, productPhotoUrl, referencePhotoUrl) 
         content: [
           {
             type: "text",
-            text: `You are an expert prompt generator specializing in high-quality, professional level, visually appealing background layout for for an 'ad creative'.Below are two images: the first is the product photo, and the second is the reference banner. Use the reference photo as inspiration like for design, aesthetics, lightning, fonts, etc to design the ad creative for the product provided, don't copy the exact text elements from the reference. The prompt you generate will be sent to the Flux image generation model to create the ad-banner. Ensure the generated banner is of significantly higher quality than the reference banner.
+            text: `You are an expert prompt generator specializing in high-quality, professional level, visually appealing background setup for for 'ad creatives'.Below are two images: the first is the product photo, and second is the reference banner. Use the reference photo as inspiration like for design, aesthetics, lightning, fonts, etc to design the ad creative for the product provided, don't copy the exact text elements from the reference. The prompt you generate will be sent to the Flux image generation model to create the ad-banner. Ensure the generated banner is of significantly higher quality than the reference banner.
             These are the ad creative details that needs to be generated in the ad creative, make sure to mention each one of them clealy in the prompt: ${inputDetails}. 
-            The prompt should only describe the advertisement layout, design elements, creative assets, color, shades and lightning—strictly don't describing the product.
-            Don't mention the word 'product' in the prompt, otherwise flux will generate the product aswell. This is because we use inpainting so you should only give prompt that defines everything other than the product. The product will always be positioned at the center of the ad-creative so the elements of the ad creative should be around the centre. Provide a visually balanced design suited to the product type and theme.
-            Make the prompt into 2 paragraphs. The first paragraph should describe the 'top of the ad text', 'OFF badge or text' elements of ad creative and the other paragraph should describe 'Highlight note text' and 'Call to action text' elements.
-            The prompt should always start with 'Design a productless background layout for ad-creative...' and continue.
-            Refer to any text elements as 'text' (e.g., 'The top of the ad should say, xyzxyz...') rather than using terms like 'title' or 'bullet points.' Describe the position, style, text font, font size of all elements explicitly.
-            The prompt should be maximum of 120 words.`,
+            The prompt should only describe the advertisement setup, design elements, creative assets, color, shades and lightning in detail—strictly don't describing the product.
+            The texts, OFF text, call to action button should all be very elegant, sleak and modern, they should not feel like old fashioned.
+            Don't mention the word 'product' in the prompt, otherwise flux will generate the product aswell. This is because we use inpainting so you should only give prompt that defines everything other than the product. The product will always be positioned at the centre of the ad-creative so all the ther elements of the ad creative should be strictly around the centre, mention it clearly in the prompt. Provide a visually balanced design suited to the product type and theme.
+            Make the prompt into 2 paragraphs. The first paragraph should describe the 'top of the ad text', 'OFF text' elements of ad creative and the other paragraph should describe 'Highlight note text' and 'Call to action text' elements.
+            The prompt should always start with 'Create a productless background environment for an ad-creative...' and continue mentioning the color palette, style, formation, etc.,
+            Refer to any text elements as 'text' (e.g., 'The top of the ad should say, xyzxyz...') rather than using terms like 'title' or 'bullet points.' Describe the position, style, text font, font size of all elements explicitly.`,
           },
           {
             type: "image_url",
@@ -92,19 +93,28 @@ async function refineAdBanner(inputDetails, productPhotoUrl, referencePhotoUrl) 
         ],
       });
     } else if (productPhotoUrl) {
+
+      // Give me a prompt that should generate the background setup of a static ad creative for this below given product photo, the prompt should only describe all the elements except the product as we will place it later using flux inpainting.
+      //       The details that needs to be in the ad creative are given here, make sure to mention each one of them clearly in the prompt: ${inputDetails}. 
+      //       Be as detailed as possinle about the elements of the ad creative, be it color, tone, look, refreshing, design elements or objects, the ad creative should be of very high quality style, color, nature, presenting and all.
+      //       The product will be placed at the centre so all the elements should be placed such that the space is well allocated for all the elements around the centre. The prompt should generate a productless background setup for the adcreative
+      //       The centre product should not be mentioned in the prompt, we will use inpainting method to place the product given by user already, so the prompt should describe a productless background setup for the static ad creative, state clearly in the prompt to generate a productless setup.
+      //       Dont make the OFF badge, set it as text rather than badge.
+
+
       messages.push({
         role: "user",
         content: [
           {
             type: "text",
-            text: ` You are an expert prompt generator specializing in high-quality, professional level, visually appealing background layout for for an 'ad creative'. Below is the product photo provided by the user, give prompt to design the ad creative for the product provided. The prompt you generate will be sent to the Flux image generation model to create the ad-banner.
+            text: ` You are an expert prompt generator specializing in high-quality, professional level, visually appealing productless background setup for for 'ad creatives'. The prompt you generate will be sent to the Flux image generation model to create the ad-banner.
             These are the ad creative details that needs to be generated in the ad creative, make sure to mention each one of them clealy in the prompt: ${inputDetails}.
-            The prompt should only describe the advertisement layout, design elements, creative assets, color, shades and lightning—strictly don't describing the product.
-            Don't mention the word 'product' in the prompt, otherwise flux will generate the product aswell. This is because we use inpainting so you should only give prompt that defines everything other than the product. The product will always be positioned at the center of the ad-creative so the elements of the ad creative should be around the centre. Provide a visually balanced design suited to the product type and theme.
-            Make the prompt into 2 paragraphs. The first paragraph should describe the 'top of the ad text', 'OFF badge or text' elements of ad creative and the other paragraph should describe 'Highlight note text' and 'Call to action text' elements.
-            The prompt should always start with 'Design a productless background layout for an ad-creative...' and continue.
-            Refer to any text elements as 'text' (e.g., 'The top of the ad should say, xyzxyz...') rather than using terms like 'title' or 'bullet points.' Describe the position, style, text font, font size of all elements explicitly.
-            The prompt should be maximum of 120 words.`,
+            The prompt should only describe the advertisement setup, design elements, creative assets, color, shades and lightning in detail—strictly don't describing the product.
+            The Highlight texts, OFF text, call to action, should all be very elegant, maintain perfect aesthetics, they should not feel like old fashioned.
+            Don't mention the word 'product' in the prompt, otherwise flux will generate the product aswell. This is because we use inpainting so you should only give prompt that defines everything other than the product. The product will always be positioned at the centre of the ad-creative so all the ther elements of the ad creative should be strictly around the centre, mention it clearly in the prompt. Provide a visually balanced design suited to the product type and theme.
+            Make the prompt into 2 paragraphs. The first paragraph should describe the 'top of the ad text', 'OFF text' elements of ad creative and the other paragraph should describe 'Highlight note text' and 'Call to action text' elements.
+            The prompt should always start with 'Create a productless background environment for an ad-creative...' and continue mentioning the color palette, style, formation, etc.,
+            Refer to any text elements as 'text' (e.g., 'The top of the ad should say, xyzxyz...') rather than using terms like 'title' or 'bullet points.' Describe the position, style, color, text font, font size of all elements explicitly.`,
           },
           {
             type: "image_url",
@@ -127,7 +137,7 @@ async function refineAdBanner(inputDetails, productPhotoUrl, referencePhotoUrl) 
       {
         model: "gpt-4o",
         messages: messages,
-        max_tokens: 1000,
+        max_tokens: 2000,
       },
       {
         headers: {
@@ -137,6 +147,8 @@ async function refineAdBanner(inputDetails, productPhotoUrl, referencePhotoUrl) 
     );
 
     const gpt4oResult = gpt4oResponse.data.choices[0].message.content.trim();
+    console.log(`GPT4o Result: ${gpt4oResult}`);
+
 
 
     const generatedProductPhotoURL = await generateProductPhoto(gpt4oResult, productPhotoUrl)
@@ -151,8 +163,12 @@ async function refineAdBanner(inputDetails, productPhotoUrl, referencePhotoUrl) 
             LoadImage_image_7: productPhotoUrl,  // Assuming this matches the Python code's LoadImage field
             CLIPTextEncode_text_13: "nsfw, worst, blur, poor quality",  // Additional filter from Python code
           },
-          workflow_id: "4e6126ad-b230-49e4-9e64-9da7471144c0",  // Same workflow_id as in Python code
+          //workflow_id: "4e6126ad-b230-49e4-9e64-9da7471144c0",  // Same workflow_id as in Python code
+          workflow_id: "2609b103-7381-4e11-8f4b-07d1705031d4",  // Same workflow_id as in Python code
         };
+
+        console.log(`Payload: ${payload}`);
+
     
         // Step 2: Make the API request to initiate the workflow
         const comfyResponse = await axios.post(COMFYUI_API_URL, payload, {

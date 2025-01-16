@@ -440,6 +440,10 @@ const ProductPhotography = ({ currentUser }) => {
               </div>
             </div>
 
+
+            <label className="block text-sm font-serif text-slate-500 sm:mb-2 sm:mt-4 sm:ms-4">The style, tone from this reference photo will be used as inspiration</label>
+
+
             
           </div>
 

@@ -453,7 +453,11 @@ const AdBanner = ({ currentUser }) => {
                   <span className="font-semibold text-gray-500">Upload Reference Banner</span>
                 </div>
               </div>
+
+            <label className="block text-sm font-serif text-slate-500 sm:mb-2 sm:mt-4 sm:ms-4">The style, tone from this reference photo will be used as inspiration</label>
+
   
+
               
             </div>
 
@@ -569,6 +573,9 @@ const AdBanner = ({ currentUser }) => {
       rows={4}
     />
   </div>
+
+  <label className="block text-sm font-serif text-slate-500 sm:mb-2 sm:mt-4 sm:ms-4">It takes approx 45 seconds to generate a stunning static ad</label>
+
 </div>
 
 
